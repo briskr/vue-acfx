@@ -18,14 +18,10 @@
     "@vue/cli-plugin-babel": "^3.0.5",
     "@vue/cli-plugin-eslint": "^3.0.5",
     "@vue/cli-service": "^3.0.5",
+    "@vue/eslint-config-prettier": "^3.0.5",
+    "lint-staged": "^7.2.2",
     "vue-cli-plugin-build-watch": "^1.0.0",
     "vue-template-compiler": "^2.5.17"
-  },
-  "prettier": {
-    "printWidth": 120,
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "arrowParens": "always"
   },
   "eslintConfig": {
     "root": true,
@@ -34,12 +30,19 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "eslint:recommended"
+      "@vue/prettier"
     ],
     "parserOptions": {
       "parser": "babel-eslint",
       "ecmaVersion": 2017
-    }
+    },
+    "rules": {}
+  },
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "arrowParens": "always"
   },
   "postcss": {
     "plugins": {
@@ -50,5 +53,18 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ]
+  ],
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "vue-cli-service lint",
+      "git add"
+    ],
+    "*.vue": [
+      "vue-cli-service lint",
+      "git add"
+    ]
+  }
 }
