@@ -1,13 +1,18 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-const LoginView = (resolve) => require(['../views/login.vue'], resolve);
-const Common401View = (resolve) => require(['../views/common/401.vue'], resolve);
-const Common404View = (resolve) => require(['../views/common/404.vue'], resolve);
+const HomeView = { tempplate: '<div>Home</div>' };
+const LoginView = (resolve) => require(['@/views/login.vue'], resolve);
+const Common401View = (resolve) => require(['@/views/common/401.vue'], resolve);
+const Common404View = (resolve) => require(['@/views/common/404.vue'], resolve);
 
 Vue.use(Router);
 
 let baseRoutes = [
+  {
+    path: '/',
+    component: HomeView,
+  },
   {
     path: '/login',
     name: '登录',
