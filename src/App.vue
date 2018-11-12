@@ -18,3 +18,9 @@
   margin-top: 60px;
 }
 </style>
+
+<script>
+export default {
+  name: 'app',
+};
+</script>
