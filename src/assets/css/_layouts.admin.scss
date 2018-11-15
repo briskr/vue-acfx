@@ -1,0 +1,73 @@
+/* ==========================================================================
+   # LAYOUTS - Common UI for Admin views
+   ========================================================================== */
+
+/*
+ * Top wrapper
+ */
+.l-admin {
+  display: flex;
+  height: 100vh;
+  background: $color-bg-placeholder;
+  color: $color-text-placeholder;
+}
+
+/*
+ * Side menu
+ */
+.l-admin__nav {
+  flex: 0 0 100px;
+  background: $color-dark;
+}
+.l-admin__menu {
+  background: $color-dark2;
+}
+.l-admin__menuitem {
+  background: $color-dark3;
+  height: 24px;
+  line-height: 24px;
+  padding-left: 12px;
+
+  &:hover {
+    background: $color-dark2;
+  }
+
+  & a {
+    color: $color-light3;
+    &:visited {
+      color: $color-light3;
+    }
+    &:hover {
+      color: $color-light1;
+    }
+  }
+}
+
+/*
+ * Body container
+ */
+.l-admin__body {
+  flex: 1 1 auto;
+}
+
+$m-header-height: 40px;
+
+/*
+ * Header above main view
+ */
+.l-admin__header {
+  width: 100%;
+  height: $m-header-height;
+}
+
+.l-admin__view-title {
+  @include t1;
+}
+
+/*
+ * Main view content
+ */
+.l-admin__main {
+  background: $color-white;
+  height: calc(100% - #{$m-header-height});
+}

@@ -1,0 +1,13 @@
+/* ==========================================================================
+   # OBJECTS - MENUS
+   ========================================================================== */
+
+/*
+ * Controls appearance of Menus, normally built with <ul> and <a> tags
+ */
+.o-menu {
+  list-style: none;
+  & a {
+    text-decoration: none;
+  }
+}

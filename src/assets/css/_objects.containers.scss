@@ -1,0 +1,12 @@
+/* ==========================================================================
+   # OBJECTS - CONTAINERS
+   ========================================================================== */
+
+/*
+ * Box with corner-guards
+ */
+.o-corner-box {
+  border: 8px solid black;
+  background-clip: padding-box;
+  border-image: url('/assets/images/layout/corner-guards.png') 8 repeat;
+}

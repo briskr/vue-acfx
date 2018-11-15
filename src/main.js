@@ -3,6 +3,9 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
+import '@/assets/css/main.scss';
+//import 'element-ui/lib/theme-chalk/index.css';
+
 Vue.config.productionTip = false;
 
 new Vue({

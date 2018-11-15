@@ -1,0 +1,18 @@
+/* ==========================================================================
+   # LAYOUTS - Toolbar
+   ========================================================================== */
+
+/*
+ * Toolbar containing 2 panels, left- and right-aligned respectively
+ */
+.l-toolbar {
+  background: $color-light3;
+  display: flex;
+  justify-content: space-between;
+}
+.l-toolbar__left,
+.l-toolbar__right {
+  background: $color-light;
+  display: flex;
+  align-items: center;
+}
