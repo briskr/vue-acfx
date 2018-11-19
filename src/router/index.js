@@ -2,15 +2,15 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 /* Common Views */
-const LoginView = (resolve) => require(['@/views/login.vue'], resolve);
+const LoginView = (resolve) => require(['@/views/Login.vue'], resolve);
 const Common401View = (resolve) => require(['@/views/common/401.vue'], resolve);
 const Common404View = (resolve) => require(['@/views/common/404.vue'], resolve);
-//const EmptyView = (resolve) => require(['@/views/empty.vue'], resolve);
+//const EmptyView = (resolve) => require(['@/views/Empty.vue'], resolve);
 
 /* To be dynamically loaded */
-import AdminHome from '@/views/admin/home.vue';
-const UsersView = (resolve) => require(['@/views/admin/users.vue'], resolve);
-const RolesView = (resolve) => require(['@/views/admin/roles.vue'], resolve);
+import AdminHome from '@/views/admin/Home.vue';
+const UsersView = (resolve) => require(['@/views/admin/Users.vue'], resolve);
+const RolesView = (resolve) => require(['@/views/admin/Roles.vue'], resolve);
 
 Vue.use(Router);
 

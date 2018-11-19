@@ -28,12 +28,28 @@ $color-bg-placeholder: #eeeeee !default;
  * Dark-to-light pallette for text and backgrounds
  */
 $color-dark: #383838 !default;
-$color-light: #f5f7fa !default;
+$color-light: #fcfcfc !default;
 
-$color-dark1: mix($color-dark, $color-light, 90%) !default;
-$color-dark2: mix($color-dark, $color-light, 80%) !default;
-$color-dark3: mix($color-dark, $color-light, 70%) !default;
+$color-dark-1: mix($color-dark, $color-light, 90%) !default;
+$color-dark-2: mix($color-dark, $color-light, 80%) !default;
+$color-dark-3: mix($color-dark, $color-light, 70%) !default;
 
-$color-light3: mix($color-dark, $color-light, 30%) !default;
-$color-light2: mix($color-dark, $color-light, 20%) !default;
-$color-light1: mix($color-dark, $color-light, 10%) !default;
+$color-light-3: mix($color-dark, $color-light, 30%) !default;
+$color-light-2: mix($color-dark, $color-light, 20%) !default;
+$color-light-1: mix($color-dark, $color-light, 10%) !default;
+
+/*
+ * Admin UI colors
+ */
+/* Sidebar */
+$color-admin-menu-bg: $color-dark !default;
+$color-admin-menu-bg-item: $color-dark-1 !default;
+$color-admin-menu-bg-hover: $color-dark-2 !default;
+$color-admin-menu-text: $color-light !default;
+/* Header */
+$color-admin-header-bg: $color-light !default;
+/* Main content wrapper */
+$color-admin-main-bg: $color-light-1;
+/* Main View */
+$color-main-view-bg: $color-white;
+$color-main-view-bg--dark: $color-dark;

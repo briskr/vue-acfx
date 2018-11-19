@@ -2,9 +2,11 @@
 </style>
 
 <template>
-  <main>
-    <h1>Roles</h1>
-    <div>roles ui</div>
+  <main class="o-main-view">
+    <ul class="o-menu o-menu--h">
+      <li >item 1</li>
+      <li >item 2</li>
+    </ul>
   </main>
 </template>
 

@@ -2,9 +2,8 @@
 </style>
 
 <template>
-  <main>
-    <h1>Users</h1>
-    <div>user ui</div>
+  <main class="o-main-view">
+
   </main>
 </template>
 
@@ -15,6 +14,12 @@ export default {
     return {
       message: 'users list',
     };
+  },
+  created() {
+    //console.debug('created');
+  },
+  mounted() {
+    //console.debug('mounted');
   },
 };
 </script>

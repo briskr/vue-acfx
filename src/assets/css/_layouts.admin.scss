@@ -1,73 +1,63 @@
 /* ==========================================================================
-   # LAYOUTS - Common UI for Admin views
+   # LAYOUTS - Common UI layout for Admin views
    ========================================================================== */
 
-/*
- * Top wrapper
- */
+/* Metric values */
+$m-header-height: 40px;
+
 .l-admin {
+  /* Top-level wrapper */
   display: flex;
   height: 100vh;
   background: $color-bg-placeholder;
   color: $color-text-placeholder;
-}
 
-/*
- * Side menu
- */
-.l-admin__nav {
-  flex: 0 0 100px;
-  background: $color-dark;
-}
-.l-admin__menu {
-  background: $color-dark2;
-}
-.l-admin__menuitem {
-  background: $color-dark3;
-  height: 24px;
-  line-height: 24px;
-  padding-left: 12px;
-
-  &:hover {
-    background: $color-dark2;
+  /* Side menu */
+  &__nav {
+    background: $color-admin-menu-bg;
+    flex: 0 0 100px;
+    min-width: 100px;
   }
-
-  & a {
-    color: $color-light3;
-    &:visited {
-      color: $color-light3;
-    }
+  &__logo {
+    height: 32px;
+  }
+  &__navitem {
+    background: $color-admin-menu-bg-item;
+    height: 24px;
+    line-height: 24px;
+    padding-left: 12px;
     &:hover {
-      color: $color-light1;
+      background: $color-admin-menu-bg-hover;
+    }
+
+    & a {
+      color: $color-admin-menu-text;
+      &:visited {
+        color: $color-admin-menu-text;
+      }
     }
   }
-}
 
-/*
- * Body container
- */
-.l-admin__body {
-  flex: 1 1 auto;
-}
+  /* Body container */
+  &__body {
+    flex: 1 1 auto;
+  }
 
-$m-header-height: 40px;
+  /* Header above main view */
+  &__header {
+    width: 100%;
+    height: $m-header-height;
+    background: $color-admin-header-bg;
+  }
 
-/*
- * Header above main view
- */
-.l-admin__header {
-  width: 100%;
-  height: $m-header-height;
-}
+  &__view-title {
+    @include t1;
+  }
 
-.l-admin__view-title {
-  @include t1;
-}
-
-/*
- * Main view content
- */
-.l-admin__main {
-  background: $color-white;
-  height: calc(100% - #{$m-header-height});
+  /* Main view */
+  &__main-wrapper {
+    background: $color-admin-main-bg;
+    height: calc(100% - #{$m-header-height});
+    padding: $unit-padding-1;
+  }
 }

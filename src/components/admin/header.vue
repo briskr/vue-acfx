@@ -7,13 +7,18 @@
       <div class="l-admin__view-title">{{currentViewTitle}}</div>
     </div>
     <div class="l-toolbar__right">
-      <div class="l-admin__menu">user menu</div>
+      <corner-menu></corner-menu>
     </div>
   </header>
 </template>
 
 <script>
+import CornerMenu from './CornerMenu';
+
 export default {
+  components: {
+    CornerMenu,
+  },
   data() {
     return {};
   },

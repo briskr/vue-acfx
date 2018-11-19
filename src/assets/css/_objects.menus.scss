@@ -3,11 +3,28 @@
    ========================================================================== */
 
 /*
- * Controls appearance of Menus, normally built with <ul> and <a> tags
+ * Controls appearance of Menus.
+ * Normally built with <ul> and <a> tags, apply flexbox to support others.
  */
 .o-menu {
   list-style: none;
+  display: flex;
   & a {
     text-decoration: none;
   }
+
+  /*
+   * Vertical menu
+   */
+  &--v {
+    flex-direction: column;
+  }
+
+  /*
+   * Horizontal menu
+   */
+  &--h {
+   align-items: center;
+  }
 }
+

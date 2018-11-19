@@ -1,4 +1,5 @@
 @import 'settings.colors';
+@import 'settings.metrics';
 @import 'settings.transitions';
 
 @import 'tools.text-sizes';
@@ -15,3 +16,5 @@
 
 @import 'objects.containers';
 @import 'objects.menus';
+
+/* components goes afterwards */
