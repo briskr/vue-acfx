@@ -1,0 +1,25 @@
+.l-dsh {
+  background: $color-dark;
+  color: $color-dsh-text;
+
+  height: 100vh;
+  display: flex;
+  flex-flow: column;
+
+  &__header {
+    background: $color-dark-1;
+    min-height: 40px;
+    flex: 0 0 auto;
+  }
+
+  &__menu {
+    & li {
+      padding: 0 $unit-padding-1;
+    }
+  }
+
+  &__body {
+    background: $color-dark-2;
+    flex: 1 1 auto;
+  }
+}

@@ -1,8 +1,9 @@
 <style lang="scss">
-@import '@/assets/css/main.scss';
+@import '@/assets/css/_settings.colors.scss';
+@import '@/assets/css/_settings.metrics.scss';
 
 .c-user-menu {
-  background: $color-bg-placeholder;
+  /* background: $color-bg-placeholder; */
   padding: 0 $unit-padding-1;
 
   &__item {

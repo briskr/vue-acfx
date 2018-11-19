@@ -5,7 +5,7 @@
 /* Metric values */
 $m-header-height: 40px;
 
-.l-admin {
+.l-adm {
   /* Top-level wrapper */
   display: flex;
   height: 100vh;
@@ -19,7 +19,9 @@ $m-header-height: 40px;
     min-width: 100px;
   }
   &__logo {
-    height: 32px;
+    height: 40px;
+    display: flex;
+    align-items: center;
   }
   &__navitem {
     background: $color-admin-menu-bg-item;

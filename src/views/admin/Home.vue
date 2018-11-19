@@ -1,13 +1,15 @@
-/*  */
+/*
+ * Admin UI layoute page */
+ */
 <style lang="scss">
 </style>
 
 <template>
-  <div class="l-admin">
+  <div class="l-adm">
     <admin-sidebar />
-    <div class="l-admin__body">
+    <div class="l-adm__body">
       <admin-header />
-      <div class="l-admin__main-wrapper">
+      <div class="l-adm__main-wrapper">
         <router-view />
       </div>
     </div>
@@ -15,8 +17,8 @@
 </template>
 
 <script>
-import AdminSidebar from '@/components/admin/Sidebar.vue';
-import AdminHeader from '@/components/admin/Header.vue';
+import AdminSidebar from '@/components/admin/Sidebar';
+import AdminHeader from '@/components/admin/Header';
 
 export default {
   components: {

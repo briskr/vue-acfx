@@ -26,5 +26,12 @@
   &--h {
    align-items: center;
   }
-}
 
+  &--light, &--light a {
+    color: $color-dark;
+  }
+
+  &--dark, &--dark a {
+    color: $color-light;
+  }
+}

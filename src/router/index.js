@@ -2,15 +2,18 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 /* Common Views */
-const LoginView = (resolve) => require(['@/views/Login.vue'], resolve);
-const Common401View = (resolve) => require(['@/views/common/401.vue'], resolve);
-const Common404View = (resolve) => require(['@/views/common/404.vue'], resolve);
+const LoginView = (resolve) => require(['@/views/Login'], resolve);
+const Common401View = (resolve) => require(['@/views/common/401'], resolve);
+const Common404View = (resolve) => require(['@/views/common/404'], resolve);
 //const EmptyView = (resolve) => require(['@/views/Empty.vue'], resolve);
 
 /* To be dynamically loaded */
-import AdminHome from '@/views/admin/Home.vue';
-const UsersView = (resolve) => require(['@/views/admin/Users.vue'], resolve);
-const RolesView = (resolve) => require(['@/views/admin/Roles.vue'], resolve);
+import AdminHome from '@/views/admin/Home';
+const UsersView = (resolve) => require(['@/views/admin/Users'], resolve);
+const RolesView = (resolve) => require(['@/views/admin/Roles'], resolve);
+
+import DashboardHome from '@/views/dashboard/Home';
+const FrontPageView = (resolve) => require(['@/views/dashboard/FrontPage'], resolve);
 
 Vue.use(Router);
 
@@ -43,6 +46,17 @@ let baseRoutes = [
         path: 'roles',
         name: '角色管理',
         component: RolesView,
+      },
+    ],
+  },
+  {
+    path: '/',
+    component: DashboardHome,
+    children: [
+      {
+        path: '',
+        name: '首页',
+        component: FrontPageView,
       },
     ],
   },
