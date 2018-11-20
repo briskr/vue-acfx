@@ -1,0 +1,63 @@
+/* ==========================================================================
+   # SETTINGS - COLORS
+   ========================================================================== */
+
+$color-white: #ffffff !default;
+$color-black: #000000 !default;
+
+/*
+ * Functional colors
+ */
+$color-primary: #36ace1 !default;
+$color-success: #67c23a !default;
+$color-warning: #e6a23c !default;
+$color-danger: #f56c6c !default;
+$color-info: #909399 !default;
+
+/*
+ * Functional text colors
+ */
+$color-text-primary: #303133 !default;
+$color-text-regular: #606266 !default;
+$color-text-secondary: #909399 !default;
+$color-text-placeholder: #c0c4cc !default;
+
+$color-bg-placeholder: #eeeeee !default;
+
+/*
+ * Dark-to-light pallette for text and backgrounds
+ */
+$color-dark: #383838 !default;
+$color-light: #fcfcfc !default;
+
+$color-dark-1: mix($color-dark, $color-light, 90%) !default;
+$color-dark-2: mix($color-dark, $color-light, 80%) !default;
+$color-dark-3: mix($color-dark, $color-light, 70%) !default;
+
+$color-light-3: mix($color-dark, $color-light, 30%) !default;
+$color-light-2: mix($color-dark, $color-light, 20%) !default;
+$color-light-1: mix($color-dark, $color-light, 10%) !default;
+
+/*
+ * Admin UI colors
+ */
+/* Sidebar */
+$color-admin-menu-bg: $color-dark !default;
+$color-admin-menu-bg-item: $color-dark-1 !default;
+$color-admin-menu-bg-hover: $color-dark-2 !default;
+$color-admin-menu-text: $color-light !default;
+/* Header */
+$color-admin-header-bg: $color-light !default;
+/* Main content wrapper */
+$color-admin-main-bg: $color-light-1;
+
+/*
+ * Dashboard UI colors
+ */
+$color-dsh-text: $color-light !default;
+
+$color-dsh-menu: $color-light !default;
+
+/* Main View */
+$color-main-view-bg: $color-white;
+$color-main-view-bg--dark: $color-dark;

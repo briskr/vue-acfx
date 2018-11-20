@@ -9,6 +9,8 @@ module.exports = {
   css: undefined,
   devServer: {
     port: process.env.DEV_SERVER_PORT,
-    open: true,
+  },
+  configureWebpack: {
+    devtool: 'source-map',
   },
 };

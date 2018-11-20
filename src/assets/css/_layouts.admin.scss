@@ -1,0 +1,65 @@
+/* ==========================================================================
+   # LAYOUTS - Common UI layout for Admin views
+   ========================================================================== */
+
+/* Metric values */
+$m-header-height: 40px;
+
+.l-adm {
+  /* Top-level wrapper */
+  display: flex;
+  height: 100vh;
+  background: $color-bg-placeholder;
+  color: $color-text-placeholder;
+
+  /* Side menu */
+  &__nav {
+    background: $color-admin-menu-bg;
+    flex: 0 0 100px;
+    min-width: 100px;
+  }
+  &__logo {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  &__navitem {
+    background: $color-admin-menu-bg-item;
+    height: 24px;
+    line-height: 24px;
+    padding-left: 12px;
+    &:hover {
+      background: $color-admin-menu-bg-hover;
+    }
+
+    & a {
+      color: $color-admin-menu-text;
+      &:visited {
+        color: $color-admin-menu-text;
+      }
+    }
+  }
+
+  /* Body container */
+  &__body {
+    flex: 1 1 auto;
+  }
+
+  /* Header above main view */
+  &__header {
+    width: 100%;
+    height: $m-header-height;
+    background: $color-admin-header-bg;
+  }
+
+  &__view-title {
+    @include t1;
+  }
+
+  /* Main view */
+  &__main-wrapper {
+    background: $color-admin-main-bg;
+    height: calc(100% - #{$m-header-height});
+    padding: $unit-padding-1;
+  }
+}

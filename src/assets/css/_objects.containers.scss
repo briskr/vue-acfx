@@ -1,0 +1,24 @@
+/* ==========================================================================
+   # OBJECTS - CONTAINERS
+   ========================================================================== */
+
+/*
+ * Main view box inside UI wrapper
+ */
+.o-main-view {
+  background: $color-main-view-bg;
+  height: 100%;
+
+  &--dark {
+    background: $color-main-view-bg--dark;
+  }
+}
+
+/*
+ * Box with gray corner-guards
+ */
+.o-corner-box {
+  border: 8px solid black;
+  background-clip: padding-box;
+  border-image: url('/assets/images/layout/corner-guards.png') 8 repeat;
+}

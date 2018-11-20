@@ -1,18 +1,23 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-const HomeView = { tempplate: '<div>Home</div>' };
-const LoginView = (resolve) => require(['@/views/login.vue'], resolve);
-const Common401View = (resolve) => require(['@/views/common/401.vue'], resolve);
-const Common404View = (resolve) => require(['@/views/common/404.vue'], resolve);
+/* Common Views */
+const LoginView = (resolve) => require(['@/views/Login'], resolve);
+const Common401View = (resolve) => require(['@/views/common/401'], resolve);
+const Common404View = (resolve) => require(['@/views/common/404'], resolve);
+//const EmptyView = (resolve) => require(['@/views/Empty.vue'], resolve);
+
+/* To be dynamically loaded */
+import AdminHome from '@/views/admin/Home';
+const UsersView = (resolve) => require(['@/views/admin/Users'], resolve);
+const RolesView = (resolve) => require(['@/views/admin/Roles'], resolve);
+
+import DashboardHome from '@/views/dashboard/Home';
+const FrontPageView = (resolve) => require(['@/views/dashboard/FrontPage'], resolve);
 
 Vue.use(Router);
 
 let baseRoutes = [
-  {
-    path: '/',
-    component: HomeView,
-  },
   {
     path: '/login',
     name: '登录',
@@ -28,8 +33,57 @@ let baseRoutes = [
     name: '找不到页面',
     component: Common404View,
   },
+  {
+    path: '/admin',
+    component: AdminHome,
+    children: [
+      {
+        path: 'users',
+        name: '用户管理',
+        component: UsersView,
+      },
+      {
+        path: 'roles',
+        name: '角色管理',
+        component: RolesView,
+      },
+    ],
+  },
+  {
+    path: '/',
+    component: DashboardHome,
+    children: [
+      {
+        path: '',
+        name: '首页',
+        component: FrontPageView,
+      },
+    ],
+  },
 ];
 
-export default new Router({
+import store from '../store';
+import { CURRENT_VIEW_TITLE } from '../store/mutationTypes';
+
+let router = new Router({
   routes: baseRoutes,
 });
+
+router.beforeEach((to, from, next) => {
+  const routeName = to.meta.name || to.name;
+  if (routeName) {
+    store.commit(CURRENT_VIEW_TITLE, routeName);
+  }
+
+  const appTitle = store.state.app.title;
+  if (routeName && appTitle) {
+    window.document.title = routeName + ' - ' + appTitle;
+  } else if (routeName) {
+    window.document.title = routeName;
+  } else if (appTitle) {
+    window.document.title = appTitle;
+  }
+  next();
+});
+
+export default router;
