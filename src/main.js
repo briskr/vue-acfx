@@ -3,10 +3,11 @@ import App from './App';
 import store from './store';
 import router from './router';
 
-import '@/assets/css/main.scss';
-//import 'element-ui/lib/theme-chalk/index.css';
-
 Vue.config.productionTip = false;
+import '@/assets/css/main.scss';
+
+import authPlugin from './authPlugin';
+Vue.use(authPlugin);
 
 new Vue({
   store,

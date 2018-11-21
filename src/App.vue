@@ -10,5 +10,8 @@
 <script>
 export default {
   name: 'app',
+  created() {
+    this.$_ac.signin();
+  },
 };
 </script>

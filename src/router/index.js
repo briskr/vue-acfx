@@ -19,11 +19,6 @@ Vue.use(Router);
 
 let baseRoutes = [
   {
-    path: '/login',
-    name: '登录',
-    component: LoginView,
-  },
-  {
     path: '/401',
     name: '无权访问',
     component: Common401View,
@@ -60,6 +55,11 @@ let baseRoutes = [
       },
     ],
   },
+  {
+    path: '/login',
+    name: '登录',
+    component: LoginView,
+  },
 ];
 
 import store from '../store';
@@ -75,7 +75,7 @@ router.beforeEach((to, from, next) => {
     store.commit(CURRENT_VIEW_TITLE, routeName);
   }
 
-  const appTitle = store.state.app.title;
+  const appTitle = process.env.VUE_APP_TITLE;
   if (routeName && appTitle) {
     window.document.title = routeName + ' - ' + appTitle;
   } else if (routeName) {
