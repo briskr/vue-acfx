@@ -5,7 +5,7 @@ import catchError from './catchError';
  * axios instance for auth* only
  */
 const instance = axios.create({
-  baseURL: process.env.AUTH_API_BASE,
+  baseURL: process.env.VUE_APP_AUTH_API_BASE,
   timeout: 10000,
 });
 

@@ -37,7 +37,7 @@
           <input id="input-password" type="password" autocomplete="current-password" :value="password" />
         </div>
         <div class="o-form-item">
-          <label/>
+          <label />
           <a class="o-btn o-btn--primary" @click="onLoginClick">Login</a>
         </div>
       </form>
@@ -47,6 +47,7 @@
 
 <script>
 export default {
+  name: 'Login',
   data() {
     return {
       username: 'abc',
@@ -59,7 +60,15 @@ export default {
         username: this.username,
         password: this.password,
       };
-      this.$_ac.submitLogin(arg);
+      const vm = this;
+      this.$ac
+        .submitLogin(arg)
+        .then(() => {
+          vm.$emit('login', vm.$router.currentRoute.query.from);
+        })
+        .catch((error) => {
+          vm.$ac.$msg('登录异常.' + error);
+        });
     },
   },
 };
