@@ -28,7 +28,7 @@ function renderItem(h, item) {
   if (Array.isArray(item.children)) {
     // render sub-menu title and child items
     const headerContent =
-      item.path && item.meta && !item.meta.isMenuGroup ? (
+      item.path && item.meta && !item.meta.noLink ? (
         <router-link to={item.path} tag="li" class="l-adm__sub-header">
           <i class={['item__icon', item.icon]} />
           <a class="item__text">{textOf(item)}</a>
@@ -39,7 +39,10 @@ function renderItem(h, item) {
           <span class="item__text">{textOf(item)}</span>
         </li>
       );
-    return h('ul', { class: 'l-adm__sub' }, [headerContent].concat(item.children.map((item) => renderItem(h, item))));
+    return h('ul', { class: 'l-adm__sub' }, [
+      headerContent,
+      ...item.children.map((item) => renderItem(h, item)),
+    ]);
   } else {
     // render menu item
     return (

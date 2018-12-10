@@ -26,7 +26,7 @@
     "vue-template-compiler": "^2.5.17"
   },
   "prettier": {
-    "printWidth": 120,
+    "printWidth": 96,
     "singleQuote": true,
     "trailingComma": "es5",
     "arrowParens": "always"

@@ -87,7 +87,10 @@ class AccessControl {
     let cachedToken = this.sessionGet(AccessControl.STORAGE_KEY_TOKEN);
     if (!cachedToken) {
       // cached result does't exist, redirect to login page
-      return this.router.push({ path: '/login', query: { from: this.router.currentRoute.path } });
+      return this.router.push({
+        path: '/login',
+        query: { from: this.router.currentRoute.path },
+      });
     }
     // get authz info (optionally done during login)
     this.submitSignin().then(() => {
@@ -172,7 +175,10 @@ class AccessControl {
       // default procedure
       switch (error.response.status) {
         case 400:
-          this.$msg({ message: error.response.data.message || 'Request invalid.', type: 'error' });
+          this.$msg({
+            message: error.response.data.message || 'Request invalid.',
+            type: 'error',
+          });
           break;
         case 401:
           sessionStorage.removeItem('user');
@@ -185,7 +191,10 @@ class AccessControl {
           });
           break;
         case 403:
-          this.$msg({ message: error.response.data.message || 'Access denied.', type: 'warning' });
+          this.$msg({
+            message: error.response.data.message || 'Access denied.',
+            type: 'warning',
+          });
           break;
         default:
           this.$msg({
@@ -296,7 +305,7 @@ class AccessControl {
         let mn = { path };
         if (m.isMenuGroup) {
           // have path but don't render link
-          mn.meta = { isMenuGroup: true };
+          mn.meta = { noLink: true };
         } else if (m.isMenu) {
           if (m.meta) mn.meta = {};
         }
