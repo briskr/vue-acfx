@@ -17,7 +17,6 @@ const allRouteDefs = [
   {
     path: '/',
     component: DashboardHome,
-    name: 'DashboardTemplate',
     children: [
       {
         path: '',

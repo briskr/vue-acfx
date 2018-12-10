@@ -9,17 +9,12 @@
 .o-menu {
   list-style: none;
   display: flex;
-  & a {
-    text-decoration: none;
-  }
-
   /*
    * Vertical menu
    */
   &--v {
     flex-direction: column;
   }
-
   /*
    * Horizontal menu
    */
@@ -27,11 +22,26 @@
    align-items: center;
   }
 
-  &--light, &--light a {
-    color: $color-dark;
+  // child block - item
+  & .item__icon {
+    font-family: '';
+  }
+  & .item__text {
+    text-decoration: none;
   }
 
-  &--dark, &--dark a {
-    color: $color-light;
+  // color variations
+
+  &--light {
+    background-color: $color-light;
+    & .item__text {
+      color: $color-dark;
+    }
+  }
+  &--dark {
+    background-color: $color-dark;
+    & .item__text {
+      color: $color-light;
+    }
   }
 }

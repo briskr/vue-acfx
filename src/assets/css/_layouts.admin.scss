@@ -23,6 +23,13 @@ $m-header-height: 40px;
     display: flex;
     align-items: center;
   }
+  &__sub {
+    background: $color-admin-menu-bg;
+  }
+  &__sub-header {
+    height: 24px;
+    line-height: 24px;
+  }
   &__navitem {
     background: $color-admin-menu-bg-item;
     height: 24px;
@@ -30,13 +37,6 @@ $m-header-height: 40px;
     padding-left: 12px;
     &:hover {
       background: $color-admin-menu-bg-hover;
-    }
-
-    & a {
-      color: $color-admin-menu-text;
-      &:visited {
-        color: $color-admin-menu-text;
-      }
     }
   }
 

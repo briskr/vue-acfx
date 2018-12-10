@@ -73,7 +73,7 @@ const demoImpl = {
           id: 'gid_admin',
           name: 'Security',
           path: '/admin/',
-          isMenuGroup: true,
+          isMenu: true,
           isPublic: false,
         },
         {

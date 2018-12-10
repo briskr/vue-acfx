@@ -229,7 +229,6 @@ class AccessControl {
     */
     // setup permitted routes
     let [dynamicRoutes, menus] = this.buildRoutesAndMenus(signinResult.modules);
-    console.debug('dynamic routes:', dynamicRoutes);
     console.debug('menus:', menus);
     this.router.addRoutes(dynamicRoutes);
 
@@ -292,9 +291,11 @@ class AccessControl {
       if (m.isPublic) rn.meta = { isPublic: m.isPublic };
       routeNodes.set(m.id, rn);
 
+      // whether to include this node in menu
       if (m.isMenu || m.isMenuGroup) {
         let mn = { path };
         if (m.isMenuGroup) {
+          // have path but don't render link
           mn.meta = { isMenuGroup: true };
         } else if (m.isMenu) {
           if (m.meta) mn.meta = {};
