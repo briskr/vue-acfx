@@ -2,9 +2,7 @@
 </style>
 
 <template>
-  <div id="app" @login="loginDirect" @logout="logoutDirect">
-    <router-view />
-  </div>
+  <router-view @login="loginDirect" @logout="logoutDirect"/>
 </template>
 
 <script>
