@@ -9,11 +9,13 @@ export default {
     this.$root.$on('login', this.loginDirect);
     this.$root.$on('logout', this.logoutDirect);
     // trigger login status check
+    // TODO move to router guard, perform login only when needed
     this.$ac.signin();
   },
   methods: {
     /**
-     * handles 'login' (success) event from login view, redirect to initially requested path
+     * handles 'login' event, submits login request
+     * @param {String} newPath - optionally redirect to this path
      */
     loginDirect(newPath) {
       this.$ac.signin(() => {
@@ -21,11 +23,13 @@ export default {
       });
     },
     /**
-     * handles 'logout' event,
+     * handles 'logout' event, submit logout request and perform local cleanup
+     * @param {String} newPath - optionally redirect to this path
      */
-    logoutDirect() {
-      this.$ac.signout();
-      this.$router.replace({ path: '/' });
+    logoutDirect(newPath) {
+      this.$ac.signout(() => {
+        this.$router.replace({ path: newPath || '/' });
+      });
     },
   },
 };

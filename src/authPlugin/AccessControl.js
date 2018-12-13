@@ -104,7 +104,7 @@ class AccessControl {
 
   /**
    * Establish signin state
-   * @param {function} callback - optional, to be called after signin complete
+   * @param {function} callback - optional, to be called after signin
    */
   signin(callback) {
     let cachedToken = this.sessionGet(AccessControl.STORAGE_KEY_TOKEN);
@@ -123,8 +123,9 @@ class AccessControl {
 
   /**
    * Perform signout clean up, clean up what signin() have done.
+   * @param {function} callback - optional, to be called after signout
    */
-  signout() {
+  signout(callback) {
     // clean up things from signin phase
     this.actionPermissions.clear();
     if (this.requestInterceptor) {
@@ -142,6 +143,8 @@ class AccessControl {
     sessionStorage.removeItem(AccessControl.STORAGE_KEY_USER);
 
     axios.defaults.headers.common['Authorization'] = undefined;
+
+    typeof callback === 'function' && callback();
   }
 
   /**
