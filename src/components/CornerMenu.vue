@@ -13,8 +13,20 @@
 </style>
 
 <template>
-  <div role="menubar" class="o-menu c-user-menu">
-    <div role="menu" class="c-user-menu__item">account</div>
-    <div role="menu" class="c-user-menu__item">help</div>
+  <div role="menubar" class="o-menu o-menu--light c-user-menu">
+    <div role="menu" class="item__text c-user-menu__item">account</div>
+    <a v-if="$ac.loggedIn" role="menu" class="item__text c-user-menu__item" @click="logout">logout</a>
+    <!-- TODO add query param -->
+    <router-link v-else role="menu" class="item__text c-user-menu__item" to="/login">login</router-link>
   </div>
 </template>
+
+<script>
+export default {
+  methods: {
+    logout() {
+      this.$root.$emit('logout');
+    },
+  },
+};
+</script>

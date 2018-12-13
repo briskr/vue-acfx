@@ -1,31 +1,31 @@
-<style>
-</style>
-
 <template>
-  <router-view @login="loginDirect" @logout="logoutDirect"/>
+  <router-view/>
 </template>
 
 <script>
 export default {
   name: 'app',
   created() {
+    this.$root.$on('login', this.loginDirect);
+    this.$root.$on('logout', this.logoutDirect);
+    // trigger login status check
     this.$ac.signin();
   },
   methods: {
     /**
-     * called after login success, redirect to initial requested path
+     * handles 'login' (success) event from login view, redirect to initially requested path
      */
     loginDirect(newPath) {
-      console.debug('loginDirect', newPath);
       this.$ac.signin(() => {
         this.$router.replace({ path: newPath || '/' });
       });
     },
     /**
-     * called after logout
+     * handles 'logout' event,
      */
     logoutDirect() {
-      this.$router.replace({ path: '/login' });
+      this.$ac.signout();
+      this.$router.replace({ path: '/' });
     },
   },
 };

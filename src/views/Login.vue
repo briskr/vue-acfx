@@ -1,3 +1,9 @@
+/*
+ * Project specific login form
+ *
+ * #acfx interface: $root.$emit('login', path) on login success
+ */
+
 <style lang="scss">
 @import '@/assets/css/_settings.colors.scss';
 @import '@/assets/css/_settings.metrics.scss';
@@ -64,10 +70,10 @@ export default {
       this.$ac
         .submitLogin(arg)
         .then(() => {
-          vm.$emit('login', vm.$router.currentRoute.query.from);
+          vm.$root.$emit('login', vm.$router.currentRoute.query.from);
         })
         .catch((error) => {
-          vm.$ac.$msg('登录异常.' + error);
+          vm.$ac.$msg('Login failed.' + error);
         });
     },
   },

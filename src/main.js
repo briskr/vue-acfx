@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import App from './App';
 import store from './store';
-import router from './router';
+import router, { baseRoutes } from './router';
 
 //Vue.config.productionTip = false;
 import '@/assets/css/main.scss';
@@ -11,17 +11,18 @@ const msgFuncName = 'msg';
 Vue.use(Message, { name: msgFuncName });
 const msgFunc = Vue['$' + msgFuncName];
 
-import routeDefs from './router/allRouteDefs';
+import allRouteDefs from './router/allRouteDefs';
 import authPlugin from './authPlugin';
+// project specific
 import demoImpl from './demoImpl';
 
 Vue.use(authPlugin, {
   name: 'ac',
   msg: msgFunc,
   impl: demoImpl,
-  store,
   router,
-  routeDefs,
+  allRouteDefs,
+  baseRoutes,
 });
 
 new Vue({

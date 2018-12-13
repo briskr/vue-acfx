@@ -65,7 +65,7 @@ const demoImpl = {
         {
           id: 'mid_about_l3b',
           name: '3rd Level B',
-          path: '/3rd',
+          path: '/3rd-b',
           parentId: 'mid_about_contact',
           isPublic: true,
         },

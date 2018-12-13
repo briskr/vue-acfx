@@ -23,9 +23,17 @@ class AccessControl {
     // login/signin API implementation
     this.apiImpl = dummyImpl;
 
+    /** menu for current user */
+    // TODO multi menu trees?
+    this.menus = [];
+
     /** resource request control */
+    this.routePermissions = new Set();
     // make axios to fail unpermitted resource requests
     this.requestInterceptor = null;
+
+    /** path->Set(allowed actions) */
+    this.actionPermissions = new Map();
 
     /*
     // TODO axios instance for login/sign API call
@@ -39,54 +47,69 @@ class AccessControl {
     });
     */
 
-    if (options) {
-      // plugin name
-      if (options.name) {
-        this.name = options.name;
-      } else {
-        this.name = 'ac';
-      }
+    if (!options) return;
 
-      // pass in actual login/signin API implementation
-      if (options.impl && typeof options === 'object') {
-        // merge with dummy impl
-        Object.assign(this.apiImpl, options.impl);
-        // Attach a reference to self for impl to use
-        this.apiImpl.ac = this;
-      }
+    // plugin name
+    if (options.name) {
+      this.name = options.name;
+    } else {
+      this.name = 'ac';
+    }
 
-      // pass in router reference
-      if (options.router) {
-        this.router = options.router;
-      } else {
-        return new Error('router is needed in options.');
-      }
-      if (options.routeDefs) {
-        this.routeDefs = options.routeDefs;
-      } else {
-        this.routeDefs = [];
-      }
+    // pass in actual login/signin API implementation
+    if (options.impl && typeof options === 'object') {
+      // merge with dummy impl
+      Object.assign(this.apiImpl, options.impl);
+      // Attach a reference to self for impl to use
+      this.apiImpl.ac = this;
+    }
 
-      // setup msg function
-      if (options.msg && typeof options.msg === 'function') {
-        this.$msg = options.msg;
-      } else {
-        // load a message provider
-        this.$msg = require('vue-m-message');
-      }
+    // pass in router reference
+    if (options.router) {
+      this.router = options.router;
+    } else {
+      return new Error('router is needed in options.');
+    }
+    if (options.allRouteDefs) {
+      this.allRouteDefs = options.allRouteDefs;
+    } else {
+      this.allRouteDefs = [];
+    }
+    if (options.baseRoutes) {
+      this.baseRoutes = options.baseRoutes;
+    } else {
+      this.baseRoutes = [];
+    }
+
+    // setup msg function
+    if (options.msg && typeof options.msg === 'function') {
+      this.$msg = options.msg;
+    } else {
+      // load a message provider
+      this.$msg = require('vue-m-message');
     }
   }
 
   // public interface begin
+  get loggedIn() {
+    return typeof this.sessionGet(AccessControl.STORAGE_KEY_TOKEN) === 'string';
+  }
+
+  /**
+   * Current logged in user info
+   */
+  get currentUser() {
+    return this.sessionGet(AccessControl.STORAGE_KEY_USER);
+  }
 
   /**
    * Establish signin state
-   * @param {function} callback - to be called after signin complete
+   * @param {function} callback - optional, to be called after signin complete
    */
   signin(callback) {
     let cachedToken = this.sessionGet(AccessControl.STORAGE_KEY_TOKEN);
     if (!cachedToken) {
-      // cached result does't exist, redirect to login page
+      // no token yet, redirect to login page
       return this.router.push({
         path: '/login',
         query: { from: this.router.currentRoute.path },
@@ -102,11 +125,19 @@ class AccessControl {
    * Perform signout clean up, clean up what signin() have done.
    */
   signout() {
+    // clean up things from signin phase
+    this.actionPermissions.clear();
     if (this.requestInterceptor) {
       axios.interceptors.request.reject(this.requestInterceptor);
       this.requestInterceptor = null;
     }
+    this.routePermissions.clear();
+    if (typeof this.removeBeforeEachHook === 'function') {
+      this.removeBeforeEachHook();
+    }
+    this.menus = [];
 
+    // clean up things from login phase
     sessionStorage.removeItem(AccessControl.STORAGE_KEY_TOKEN);
     sessionStorage.removeItem(AccessControl.STORAGE_KEY_USER);
 
@@ -213,7 +244,6 @@ class AccessControl {
    * @param LoginResult returned value from impl.login()
    */
   onLoginSuccess(loginResult) {
-    console.debug('login result:', loginResult);
     if (loginResult.token) {
       this.sessionSet(AccessControl.STORAGE_KEY_TOKEN, loginResult.token);
       // TODO allow impl to override token usage
@@ -230,18 +260,27 @@ class AccessControl {
    * @param SigninResult signonResult
    */
   onSigninSuccess(signinResult) {
-    console.debug('signin result:', signinResult);
-    // resource request control
-    /*
-    resourcePermissions = [];
-    this.setupRequestInterceptor(this.resourcePermissions);
-    */
     // setup permitted routes
     let [dynamicRoutes, menus] = this.buildRoutesAndMenus(signinResult.modules);
-    console.debug('menus:', menus);
-    this.router.addRoutes(dynamicRoutes);
+    if (!this._routesAdded) {
+      // TODO could router be reset on logout?
+      this.router.addRoutes(dynamicRoutes);
+      this._routesAdded = true;
+    }
+    // setup router guards
+    this.buildRoutePermissions(this.baseRoutes);
+    this.buildRoutePermissions(dynamicRoutes);
+    this.removeBeforeEachHook = this.router.beforeEach((to, from, next) => {
+      if (this.routePermissions.has(to.path)) {
+        next();
+      } else {
+        next('/401');
+      }
+    });
+    // setup request control
+    //this.setupRequestInterceptor(this.resourcePermissions);
 
-    // publish menus
+    // setup menus
     this.menus = menus;
 
     return Promise.resolve(signinResult);
@@ -381,8 +420,7 @@ class AccessControl {
     } while (visitedIndices.size < modules.length && visitedIndices.size > visitedCount);
 
     // fill route detail according to full routes map
-    const routePathDefMap = this.buildRoutePathDefMap(this.routeDefs);
-    console.debug('routePathDefMap:', routePathDefMap);
+    const routePathDefMap = this.buildRoutePathDefMap(this.allRouteDefs);
 
     for (let routeNode of routesTree) {
       this.fillRouteDetails(routeNode, routePathDefMap);
@@ -391,6 +429,19 @@ class AccessControl {
       this.fillMenuDetails(menuNode, routePathDefMap);
     }
     return [routesTree, menusTree];
+  }
+
+  buildRoutePermissions(routes, parentPath) {
+    for (let route of routes) {
+      let fullPath = route.path;
+      if (parentPath) {
+        fullPath = this.joinPath(parentPath, fullPath);
+      }
+      this.routePermissions.add(fullPath);
+      if (route.children) {
+        this.buildRoutePermissions(route.children, fullPath);
+      }
+    }
   }
 
   /**

@@ -8,20 +8,20 @@ const Common404View = (resolve) => require(['@/views/common/404'], resolve);
 
 Vue.use(Router);
 
-let baseRoutes = [
+export const baseRoutes = [
   {
     path: '/401',
-    name: '无权访问',
+    name: 'Unauthorized',
     component: Common401View,
   },
   {
     path: '/404',
-    name: '找不到页面',
+    name: 'NotFound',
     component: Common404View,
   },
   {
     path: '/login',
-    name: '登录',
+    name: 'Login',
     component: LoginView,
   },
 ];
@@ -29,25 +29,24 @@ let baseRoutes = [
 import store from '../store';
 import { CURRENT_VIEW_TITLE } from '../store/mutationTypes';
 
-let router = new Router({
+const router = new Router({
   routes: baseRoutes,
 });
 
-router.beforeEach((to, from, next) => {
-  const routeName = to.meta.name || to.name;
-  if (routeName) {
-    store.commit(CURRENT_VIEW_TITLE, routeName);
+router.afterEach((to) => {
+  const viewTitle = to.meta.name || to.name;
+  if (viewTitle) {
+    store.commit(CURRENT_VIEW_TITLE, viewTitle);
   }
 
   const appTitle = process.env.VUE_APP_TITLE;
-  if (routeName && appTitle) {
-    window.document.title = routeName + ' - ' + appTitle;
-  } else if (routeName) {
-    window.document.title = routeName;
+  if (viewTitle && appTitle) {
+    window.document.title = viewTitle + ' - ' + appTitle;
+  } else if (viewTitle) {
+    window.document.title = viewTitle;
   } else if (appTitle) {
     window.document.title = appTitle;
   }
-  next();
 });
 
 export default router;
