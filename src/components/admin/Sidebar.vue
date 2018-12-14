@@ -4,7 +4,7 @@
 <template>
   <nav class="l-adm__nav">
     <logo class="l-adm__logo" />
-    <div class="o-menu o-menu--v o-menu--dark">
+    <div class="o-menu o-menu--v o-menu--light">
       <sub-menu
         v-for="menu in $ac.menus"
         :data="menu"

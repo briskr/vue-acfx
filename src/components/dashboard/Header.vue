@@ -1,16 +1,10 @@
-<style lang="scss">
-.c-header-nav {
-  background: transparent;
-}
-</style>
-
 <template>
   <div class="l-dsh__header l-toolbar">
     <div class="l-toolbar__left">
       <logo/>
     </div>
     <div class="l-toolbar__fill">
-      <ul class="o-menu o-menu--h o-menu--dark c-header-nav">
+      <ul class="o-menu o-menu--h o-menu--light">
         <li class="menu-item">
           <router-link to="/admin/users" class="menu-item__text">Users</router-link>
           <!-- TODO menu items -->

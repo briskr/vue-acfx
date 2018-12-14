@@ -39,15 +39,12 @@
   }
 
   // color variations
-
-  &--light {
-    background-color: $color-light;
+  &--dark {
     & .menu-item__text {
       color: $color-dark;
     }
   }
-  &--dark {
-    background-color: $color-dark;
+  &--light {
     & .menu-item__text {
       color: $color-light;
     }
