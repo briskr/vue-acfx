@@ -8,9 +8,6 @@ export default {
   created() {
     this.$root.$on('login', this.loginDirect);
     this.$root.$on('logout', this.logoutDirect);
-    // trigger login status check
-    // TODO move to router guard, perform login only when needed
-    this.$ac.signin();
   },
   methods: {
     /**
@@ -27,8 +24,9 @@ export default {
      * @param {String} newPath - optionally redirect to this path
      */
     logoutDirect(newPath) {
+      const vm = this;
       this.$ac.signout(() => {
-        this.$router.replace({ path: newPath || '/' });
+        vm.$router.replace({ path: newPath || '/' });
       });
     },
   },

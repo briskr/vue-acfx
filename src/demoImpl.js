@@ -33,48 +33,32 @@ const demoImpl = {
     const result = {
       modules: [
         {
-          id: 'gid_home',
-          path: '/',
-          isPublic: true,
-        },
-        {
-          id: 'mid_frontpage',
-          path: '',
-          parentId: 'gid_home',
-          isPublic: true,
-        },
-        {
           id: 'mid_about',
           path: 'about',
-          parentId: 'gid_home',
-          isPublic: true,
         },
         {
           id: 'mid_about_contact',
           path: 'contact',
           parentId: 'mid_about',
-          isPublic: true,
         },
         {
           id: 'mid_about_l3a',
           name: '3rd Level A',
           path: '3rd',
           parentId: 'mid_about_contact',
-          isPublic: true,
         },
         {
           id: 'mid_about_l3b',
           name: '3rd Level B',
           path: '/3rd-b',
           parentId: 'mid_about_contact',
-          isPublic: true,
         },
         {
           id: 'gid_admin',
           name: 'Security',
           path: '/admin/',
           isMenu: true,
-          isPublic: false,
+          isControlled: true,
         },
         {
           id: 'mid_users',
@@ -82,7 +66,7 @@ const demoImpl = {
           name: 'Users',
           path: 'users',
           isMenu: true,
-          isPublic: false,
+          isControlled: true,
         },
         {
           id: 'mid_roles',
@@ -90,14 +74,13 @@ const demoImpl = {
           name: 'Roles',
           path: 'roles',
           isMenu: true,
-          isPublic: false,
+          isControlled: true,
         },
         {
           id: 'gid_base',
           name: 'Base Data',
           path: '/base/',
           isMenuGroup: true,
-          isPublic: true,
         },
         {
           id: 'mid_category',
@@ -105,14 +88,11 @@ const demoImpl = {
           name: 'Categories',
           path: 'categories',
           isMenu: true,
-          isPublic: true,
         },
         {
           id: 'gid_debug',
           name: 'Debug',
           path: '/debug',
-          isMenu: false,
-          isPublic: false,
         },
       ],
     };

@@ -2,6 +2,9 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 /* Common Views */
+import DashboardHome from '@/views/dashboard/Home';
+import FrontPageView from '@/views/dashboard/FrontPage';
+
 const LoginView = (resolve) => require(['@/views/Login'], resolve);
 const Common401View = (resolve) => require(['@/views/common/401'], resolve);
 const Common404View = (resolve) => require(['@/views/common/404'], resolve);
@@ -9,6 +12,18 @@ const Common404View = (resolve) => require(['@/views/common/404'], resolve);
 Vue.use(Router);
 
 export const baseRoutes = [
+  {
+    path: '/',
+    name: 'Dashboard',
+    component: DashboardHome,
+    children: [
+      {
+        path: '',
+        name: 'FrontPage',
+        component: FrontPageView,
+      },
+    ],
+  },
   {
     path: '/401',
     name: 'Unauthorized',
@@ -33,7 +48,8 @@ const router = new Router({
   routes: baseRoutes,
 });
 
-router.afterEach((to) => {
+router.afterEach((to, from) => {
+  console.debug('router.afterEach: from ' + from.path + ' to ' + to.path);
   const viewTitle = to.meta.name || to.name;
   if (viewTitle) {
     store.commit(CURRENT_VIEW_TITLE, viewTitle);

@@ -26,13 +26,26 @@ const allRouteDefs = [
           name: '首页',
         },
       },
+    ],
+  },
+  {
+    path: '/about',
+    component: DashboardHome,
+    children: [
       {
-        path: 'about',
-        name: 'About',
+        path: 'contact',
+        name: 'AboutContact',
         component: AboutView,
-        meta: {
-          name: '关于本站',
-        },
+      },
+      {
+        path: '3rd',
+        name: 'About3rdLevel-A',
+        component: AboutView,
+      },
+      {
+        path: '/3rd-b',
+        name: 'About3rdLevel-B',
+        component: AboutView,
       },
     ],
   },

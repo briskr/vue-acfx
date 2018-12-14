@@ -77,6 +77,7 @@ class AccessControl {
     }
     if (options.baseRoutes) {
       this.baseRoutes = options.baseRoutes;
+      this.buildRoutePermissions(this.baseRoutes);
     } else {
       this.baseRoutes = [];
     }
@@ -87,6 +88,35 @@ class AccessControl {
     } else {
       // load a message provider
       this.$msg = require('vue-m-message');
+    }
+
+    this.removeBeforeEachHook = this.router.beforeEach((to, from, next) => {
+      //console.debug('router.beforeEach', to.path, from);
+      if (to.meta && to.meta.isControlled) {
+        // permission needed
+        if (!this.loggedIn) {
+          next({ name: 'Login', query: { from: to.path } });
+        } else {
+          if (this.routePermissions.has(to.path)) {
+            next();
+          } else {
+            next({ name: 'Unauthorized' });
+          }
+        }
+      } else {
+        if (this.routePermissions.has(to.path)) {
+          next();
+        } else {
+          next({ name: 'NotFound' });
+        }
+      }
+    });
+  }
+
+  //NOTE not used on any occasion, might be removed
+  destructor() {
+    if (typeof this.removeBeforeEachHook === 'function') {
+      this.removeBeforeEachHook();
     }
   }
 
@@ -122,7 +152,7 @@ class AccessControl {
   }
 
   /**
-   * Perform signout clean up, clean up what signin() have done.
+   * Clean up login user, clean up what signin() have done.
    * @param {function} callback - optional, to be called after signout
    */
   signout(callback) {
@@ -133,9 +163,6 @@ class AccessControl {
       this.requestInterceptor = null;
     }
     this.routePermissions.clear();
-    if (typeof this.removeBeforeEachHook === 'function') {
-      this.removeBeforeEachHook();
-    }
     this.menus = [];
 
     // clean up things from login phase
@@ -152,32 +179,29 @@ class AccessControl {
    * Call from your login form.
    * @returns {Promise}
    */
-  submitLogin(arg) {
+  async submitLogin(arg) {
     if (!this.apiImpl.login) {
       // login api not defined
       // continue in case that actual app has other authentication mechanism
       return Promise.resolve();
     }
-    return this.apiImpl.login(arg).then((result) => {
-      this.onLoginSuccess(result);
-      return result;
-    });
+    const result = await this.apiImpl.login(arg);
+    this.onLoginSuccess(result);
+    return result;
   }
 
   /**
-   * Submit signon request with actual impl.
-   * Currently called by signin().
-   * (might be needed when token exists but permissions lost?)
+   * Submit signin request with actual impl.
+   * (when token exists but permissions lost?)
    * @returns {Promise}
    */
-  submitSignin() {
+  async submitSignin() {
     if (!this.apiImpl.signin) {
       return Promise.resolve();
     }
-    return this.apiImpl.signin().then((result) => {
-      this.onSigninSuccess(result);
-      return result;
-    });
+    const result = await this.apiImpl.signin();
+    this.onSigninSuccess(result);
+    return result;
   }
 
   /**
@@ -276,21 +300,16 @@ class AccessControl {
   onSigninSuccess(signinResult) {
     // setup permitted routes
     let [dynamicRoutes, menus] = this.buildRoutesAndMenus(signinResult.modules);
+    console.debug('routes:', dynamicRoutes);
+    console.debug('menus:', menus);
     if (!this._routesAdded) {
       // TODO could router be reset on logout?
       this.router.addRoutes(dynamicRoutes);
       this._routesAdded = true;
     }
     // setup router guards
-    this.buildRoutePermissions(this.baseRoutes);
     this.buildRoutePermissions(dynamicRoutes);
-    this.removeBeforeEachHook = this.router.beforeEach((to, from, next) => {
-      if (this.routePermissions.has(to.path)) {
-        next();
-      } else {
-        next('/401');
-      }
-    });
+
     // setup request control
     //this.setupRequestInterceptor(this.resourcePermissions);
 
@@ -345,16 +364,19 @@ class AccessControl {
     const menuNodes = new Map();
     for (let m of modules) {
       let path = m.path;
+
+      // build route node
       if (m.path.length > 1 && m.path.endsWith('/')) {
         path = m.path.substring(0, m.path.length - 1);
       }
       const rn = { path };
       if (m.name) rn.name = m.name;
-      if (m.isPublic) rn.meta = { isPublic: m.isPublic };
+      if (m.isControlled) rn.meta = { isControlled: true };
       routeNodes.set(m.id, rn);
 
       // whether to include this node in menu
       if (m.isMenu || m.isMenuGroup) {
+        // build menu node
         let mn = { path };
         if (m.isMenuGroup) {
           // have path but don't render link
