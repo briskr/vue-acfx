@@ -29,7 +29,7 @@ const plugin = {
     }
     const acCtrl = new AccessControl(options);
 
-    // Set up global mixin, default: vm._$ac
+    // Set up global mixin, default: vm.$ac
     Object.defineProperty(Vue.prototype, `$${acCtrl.name}`, {
       get() {
         return acCtrl;
@@ -39,13 +39,8 @@ const plugin = {
     // Set up custom directive, default: v-ac
     Vue.directive(acCtrl.name, {
       inserted: function(el, { value }) {
-        if (acCtrl.hasPermission(value)) {
-          // TODO debug
-          el.style.display = 'none';
-          el.dataset[acCtrl.name] = 'success';
-          //el.parentNode.removeChild(el);
-        } else {
-          el.dataset[acCtrl.name] = 'fail';
+        if (!acCtrl.hasPermission(value)) {
+          el.parentNode.removeChild(el);
         }
       },
     });

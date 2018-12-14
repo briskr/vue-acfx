@@ -185,10 +185,21 @@ class AccessControl {
    * @param entry - required permission entr(y|ies) for some UI element
    */
   hasPermission(entry) {
-    if (this.apiImpl.hasPermission) {
+    // call project-specific impl first
+    if (typeof this.apiImpl.hasPermission === 'function') {
       return this.apiImpl.hasPermission(entry);
     }
-    // TODO default impl
+    // default impl
+    const currentPath = this.router.app && this.router.app.$route.path;
+    if (!currentPath) {
+      // DEBUG could this be hit when router.app not set up?
+      debugger;
+      return true;
+    }
+    if (this.actionPermissions.has(currentPath)) {
+      const actionSet = this.actionPermissions.get(currentPath);
+      return actionSet && actionSet.has(entry);
+    }
   }
 
   // end public interface
@@ -477,7 +488,8 @@ class AccessControl {
   }
 
   /**
-   * Join parent and child path with '/'
+   * Join parent and child path with '/'.
+   * If child starts with '/', treat it as full path
    */
   joinPath(parent, child) {
     if (child.startsWith('/')) {
