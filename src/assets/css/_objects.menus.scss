@@ -19,28 +19,36 @@
    * Horizontal menu
    */
   &--h {
-   align-items: center;
+    align-items: center;
+
+    & .menu-item {
+      padding: 0 0 0 $unit-padding-1;
+    }
+    & .menu-item:last-child {
+      padding: 0 $unit-padding-1;
+    }
   }
 
   // child block - item
-  & .item__icon {
+  & .menu-item__icon {
     font-family: '';
   }
-  & .item__text {
+  & .menu-item__text {
     text-decoration: none;
+    cursor: pointer;
   }
 
   // color variations
 
   &--light {
     background-color: $color-light;
-    & .item__text {
+    & .menu-item__text {
       color: $color-dark;
     }
   }
   &--dark {
     background-color: $color-dark;
-    & .item__text {
+    & .menu-item__text {
       color: $color-light;
     }
   }

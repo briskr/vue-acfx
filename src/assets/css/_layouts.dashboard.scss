@@ -12,12 +12,6 @@
     flex: 0 0 auto;
   }
 
-  &__menu {
-    & li {
-      padding: 0 $unit-padding-1;
-    }
-  }
-
   &__body {
     background: $color-dark-2;
     flex: 1 1 auto;

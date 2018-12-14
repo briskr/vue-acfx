@@ -1,23 +1,17 @@
-<style lang="scss">
-@import '@/assets/css/_settings.colors.scss';
-@import '@/assets/css/_settings.metrics.scss';
-
-.c-user-menu {
-  /* background: $color-bg-placeholder; */
-  padding: 0 $unit-padding-1;
-
-  &__item {
-    margin: 0 $unit-padding-1;
-  }
-}
-</style>
-
 <template>
-  <div role="menubar" class="o-menu o-menu--light c-user-menu">
-    <div role="menu" class="item__text c-user-menu__item">account</div>
-    <a v-if="$ac.loggedIn" role="menu" class="item__text c-user-menu__item" @click="logout">logout</a>
-    <!-- TODO add query param -->
-    <router-link v-else role="menu" class="item__text c-user-menu__item" to="/login">login</router-link>
+  <div role="menubar" class="o-menu o-menu--light o-menu--h">
+    <div role="menu" class="menu-item">
+      <span class="menu-item__text">account</span>
+      <!-- hover menu <ul>
+      </ul> -->
+    </div>
+    <div v-if="$ac.loggedIn" class="menu-item">
+      <a role="menuitem" class="menu-item__text" @click="logout">logout</a>
+    </div>
+    <router-link tag="div" v-else role="menu" class="menu-item"
+     :to="{ name: 'Login', query: { from: $route.path } }">
+      <a role="menuitem" class="menu-item__text">login</a>
+    </router-link>
   </div>
 </template>
 

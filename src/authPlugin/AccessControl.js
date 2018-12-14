@@ -434,6 +434,11 @@ class AccessControl {
     return [routesTree, menusTree];
   }
 
+  /**
+   * Collect paths of permitted routes
+   * @param {Object[]} routes - route to be collected
+   * @param {string} [] parentPath
+   */
   buildRoutePermissions(routes, parentPath) {
     for (let route of routes) {
       let fullPath = route.path;

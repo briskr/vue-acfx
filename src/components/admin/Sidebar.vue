@@ -30,13 +30,13 @@ function renderItem(h, item) {
     const headerContent =
       item.path && item.meta && !item.meta.noLink ? (
         <router-link to={item.path} tag="li" class="l-adm__sub-header">
-          <i class={['item__icon', item.icon]} />
-          <a class="item__text">{textOf(item)}</a>
+          <i class={['menu-item__icon', item.icon]} />
+          <a class="menu-item__text">{textOf(item)}</a>
         </router-link>
       ) : (
         <li class="l-adm__sub-header">
-          <i class={['item__icon', item.icon]} />
-          <span class="item__text">{textOf(item)}</span>
+          <i class={['menu-item__icon', item.icon]} />
+          <span class="menu-item__text">{textOf(item)}</span>
         </li>
       );
     return h('ul', { class: 'l-adm__sub' }, [
@@ -47,7 +47,7 @@ function renderItem(h, item) {
     // render menu item
     return (
       <router-link to={item.path} tag="li" class="l-adm__navitem">
-        <a class="item__text">{textOf(item)}</a>
+        <a class="menu-item__text">{textOf(item)}</a>
       </router-link>
     );
   }
