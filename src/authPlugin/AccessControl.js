@@ -20,8 +20,10 @@ class AccessControl {
   static STORAGE_KEY_USER = '_user';
 
   /**
+   * Class of the $ac Vue extension object, holding application-level states
+   * and data related to access control functionalities.
    *
-   * @param {Object} options
+   * @param {Object} options - used to initialize $ac object
    */
   constructor(options) {
     if (!options) throw new Error('options is needed.');
@@ -510,6 +512,7 @@ class AccessControl {
       return lsVal;
     }
   }
+
   /**
    * Save string or object to storage
    * @param {*} key
@@ -563,7 +566,7 @@ class AccessControl {
 
     if (Array.isArray(routeDef.children)) {
       for (let rdChild of routeDef.children) {
-        this.parseRouteDef(routePathDefMap, rdChild, routeDef.path);
+        this.parseRouteDef(routePathDefMap, rdChild, fullPath);
       }
     }
   }

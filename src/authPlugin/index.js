@@ -4,19 +4,19 @@ const plugin = {
   /**
    * Plugin install entrance
    * @param {class} Vue - Vue root, to be extended
-   * @param {object} options - customize options:
-   * <code>
-   *  {
-   *    name: string = 'ac',      // this plugin extends vue instance at 'vm.$name'
-   *    impl: object = dummyImpl, // strategy instance, actual API implementation, see dummyImpl.js
-   *    router: object,           // pass in router instance to be extended
-   *    msg: function|string,     // a message display function, will be available at vm.$ac.$msg. Could be:
-   *                                  1) 'noop', to disable message display;
-   *                                  2) function name, if already installed at vm[msg];
-   *                                  3) a function reference.
-   *                                 If falsy, will load a vue-m-message instance as default.
-   *  }
-   * </code>
+   * @param {object} options - used to initialize $ac object:
+   * ```js
+{
+  name: string = 'ac',      // this plugin extends vue instance at 'vm.$name'
+  impl: object = dummyImpl, // strategy instance, actual API implementation, see dummyImpl.js
+  router: object,           // pass in router instance to be extended
+  msg: function|string,     // a message display function, will be available at vm.$ac.$msg. Could be:
+    1) 'noop', to disable message display;
+    2) function name, if already installed at vm[msg];
+    3) a function reference.
+  If falsy, will load a vue-m-message instance as default.
+}
+    ```
    */
   install(Vue, options) {
     // Use existing message function if provided

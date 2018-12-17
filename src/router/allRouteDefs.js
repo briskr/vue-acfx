@@ -35,17 +35,22 @@ const allRouteDefs = [
       {
         path: 'contact',
         name: 'AboutContact',
+        meta: {
+          name: '联系我们',
+        },
         component: AboutView,
-      },
-      {
-        path: '3rd',
-        name: 'About3rdLevel-A',
-        component: AboutView,
-      },
-      {
-        path: '/3rd-b',
-        name: 'About3rdLevel-B',
-        component: AboutView,
+        children: [
+          {
+            path: '3rd',
+            name: 'About3rdLevel-A',
+            component: AboutView,
+          },
+          {
+            path: '/3rd-b',
+            name: 'About3rdLevel-B',
+            component: AboutView,
+          },
+        ],
       },
     ],
   },
