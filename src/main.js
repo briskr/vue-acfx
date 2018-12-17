@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import App from './App';
 import store from './store';
 import router, { baseRoutes } from './router';
 
@@ -9,7 +8,7 @@ import '@/assets/css/main.scss';
 import Message from 'vue-m-message';
 const msgFuncName = 'msg';
 Vue.use(Message, { name: msgFuncName });
-const msgFunc = Vue['$' + msgFuncName];
+const msgFunc = Vue.prototype['$' + msgFuncName];
 
 import allRouteDefs from './router/allRouteDefs';
 import authPlugin from './authPlugin';
@@ -23,8 +22,10 @@ Vue.use(authPlugin, {
   router,
   allRouteDefs,
   baseRoutes,
+  store,
 });
 
+import App from './App';
 new Vue({
   store,
   router,

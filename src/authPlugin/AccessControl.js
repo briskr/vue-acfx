@@ -19,21 +19,27 @@ class AccessControl {
   static STORAGE_KEY_TOKEN = '_token';
   static STORAGE_KEY_USER = '_user';
 
+  /**
+   *
+   * @param {Object} options
+   */
   constructor(options) {
+    if (!options) throw new Error('options is needed.');
+    if (!options.router) {
+      throw new Error('router is needed in options.');
+    }
+    if (!options.store) {
+      throw new Error('vuex store is needed in options.');
+    }
+    this.router = options.router;
+    this.store = options.store;
+
     // login/signin API implementation
     this.apiImpl = dummyImpl;
 
     /** menu for current user */
     // TODO multi menu trees?
     this.menus = [];
-
-    /** resource request control */
-    this.routePermissions = new Set();
-    // make axios to fail unpermitted resource requests
-    this.requestInterceptor = null;
-
-    /** path->Set(allowed actions) */
-    this.actionPermissions = new Map();
 
     /*
     // TODO axios instance for login/sign API call
@@ -46,8 +52,6 @@ class AccessControl {
       timeout: 10000,
     });
     */
-
-    if (!options) return;
 
     // plugin name
     if (options.name) {
@@ -63,13 +67,7 @@ class AccessControl {
       // Attach a reference to self for impl to use
       this.apiImpl.ac = this;
     }
-
-    // pass in router reference
-    if (options.router) {
-      this.router = options.router;
-    } else {
-      return new Error('router is needed in options.');
-    }
+    // information needed for router control
     if (options.allRouteDefs) {
       this.allRouteDefs = options.allRouteDefs;
     } else {
@@ -77,11 +75,9 @@ class AccessControl {
     }
     if (options.baseRoutes) {
       this.baseRoutes = options.baseRoutes;
-      this.buildRoutePermissions(this.baseRoutes);
     } else {
       this.baseRoutes = [];
     }
-
     // setup msg function
     if (options.msg && typeof options.msg === 'function') {
       this.$msg = options.msg;
@@ -90,8 +86,16 @@ class AccessControl {
       this.$msg = require('vue-m-message');
     }
 
-    this.removeBeforeEachHook = this.router.beforeEach((to, from, next) => {
-      //console.debug('router.beforeEach', to.path, from);
+    /** resource request control */
+    this.initRoutePermissions();
+
+    // make axios to fail unpermitted resource requests
+    this.requestInterceptor = null;
+    /** path->Set(allowed actions) */
+    this.actionPermissions = new Map();
+
+    this.removeBeforeEachHandle = this.router.beforeEach((to, from, next) => {
+      console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
       if (to.meta && to.meta.isControlled) {
         // permission needed
         if (!this.loggedIn) {
@@ -115,8 +119,8 @@ class AccessControl {
 
   //NOTE not used on any occasion, might be removed
   destructor() {
-    if (typeof this.removeBeforeEachHook === 'function') {
-      this.removeBeforeEachHook();
+    if (typeof this.removeBeforeEachHandle === 'function') {
+      this.removeBeforeEachHandle();
     }
   }
 
@@ -157,12 +161,14 @@ class AccessControl {
    */
   signout(callback) {
     // clean up things from signin phase
+    this.store.dispatch('clearSession');
+
     this.actionPermissions.clear();
     if (this.requestInterceptor) {
       axios.interceptors.request.reject(this.requestInterceptor);
       this.requestInterceptor = null;
     }
-    this.routePermissions.clear();
+    this.initRoutePermissions();
     this.menus = [];
 
     // clean up things from login phase
@@ -290,7 +296,9 @@ class AccessControl {
     }
     if (loginResult.user) {
       this.sessionSet(AccessControl.STORAGE_KEY_USER, loginResult.user);
+      this.store.dispatch('setUser', { user: loginResult.user });
     }
+    return Promise.resolve(loginResult);
   }
 
   /**
@@ -465,6 +473,11 @@ class AccessControl {
       this.fillMenuDetails(menuNode, routePathDefMap);
     }
     return [routesTree, menusTree];
+  }
+
+  initRoutePermissions() {
+    this.routePermissions = new Set();
+    this.buildRoutePermissions(this.baseRoutes);
   }
 
   /**

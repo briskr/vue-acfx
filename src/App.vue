@@ -15,8 +15,12 @@ export default {
      * @param {String} newPath - optionally redirect to this path
      */
     loginDirect(newPath) {
+      const vm = this;
       this.$ac.signin(() => {
-        this.$router.replace({ path: newPath || '/' });
+        const path = newPath || '/';
+        if (vm.$router.currentRoutePath != path) {
+          vm.$router.replace({ path });
+        }
       });
     },
     /**
