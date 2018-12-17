@@ -73,7 +73,7 @@ export default {
           vm.$root.$emit('login', vm.$router.currentRoute.query.from);
         })
         .catch((error) => {
-          vm.$ac.$msg('Login failed.' + error);
+          vm.$ac.$msg.warning('Login failed. (' + error + ')');
         });
     },
   },
