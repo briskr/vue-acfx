@@ -29,6 +29,12 @@ const allRouteDefs = [
     ],
   },
   {
+    path: '/login',
+    meta: {
+      name: '登录',
+    },
+  },
+  {
     path: '/about',
     component: DashboardHome,
     children: [

@@ -101,6 +101,8 @@ class AccessControl {
         if (!this.hasLoginToken) {
           next({ name: 'Login', query: { from: to.path } });
         } else {
+          // if sessionStorage has full routes but routePermissions has only base,
+          // then load full routes from sessionStorage
           if (this.routePermissions.has(to.path)) {
             next();
           } else {
@@ -121,6 +123,7 @@ class AccessControl {
       this.fillRouteDetails(routeNode);
     }
     this.router.addRoutes(this.baseRoutes);
+    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
 
     // make axios to fail unpermitted resource requests
     this.requestInterceptor = null;
@@ -178,6 +181,8 @@ class AccessControl {
   signout(callback) {
     // clean up things from signin phase
     this.store.dispatch('clearSession');
+    // reset baseRoutes in vuex store
+    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
 
     this.actionPermissions.clear();
     if (this.requestInterceptor) {
@@ -336,8 +341,8 @@ class AccessControl {
     console.debug('menus:', menus);
 
     if (!this._routesAdded) {
-      // TODO could router be reset on logout?
       this.router.addRoutes(dynamicRoutes);
+      this.store.dispatch('addRoutes', { routes: dynamicRoutes });
       this._routesAdded = true;
     }
     // setup router guards
