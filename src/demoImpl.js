@@ -102,12 +102,12 @@ const demoImpl = {
   },
 
   /**
-   * Check availability and call ac.$msg()
+   * Check availability and call ac.msg()
    * @param {object} arg - message: text, type: 'info'|'success'|'error'|'warning'|'loading', other options see vue-m-message
    */
   msg(options) {
     if (this.ac) {
-      this.ac.$msg(options);
+      this.ac.msg(options);
     } else {
       console.debug(options.type, options.message);
     }

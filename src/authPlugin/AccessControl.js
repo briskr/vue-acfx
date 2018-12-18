@@ -55,11 +55,18 @@ class AccessControl {
     });
     */
 
-    // plugin name
+    // name to extend Vue vm
     if (options.name) {
       this.name = options.name;
     } else {
       this.name = 'ac';
+    }
+    // setup msg function
+    if (options.msg && typeof options.msg === 'function') {
+      this.msg = options.msg;
+    } else {
+      // load a message provider
+      this.msg = require('vue-m-message');
     }
 
     // pass in actual login/signin API implementation
@@ -69,38 +76,29 @@ class AccessControl {
       // Attach a reference to self for impl to use
       this.apiImpl.ac = this;
     }
-    // information needed for router control
+
+    // path -> route detail info item
+    this.routePathDefMap = new Map();
     if (options.allRouteDefs) {
-      this.allRouteDefs = options.allRouteDefs;
-    } else {
-      this.allRouteDefs = [];
+      for (let routeDef of options.allRouteDefs) {
+        this.parseRouteDef(routeDef);
+      }
     }
+
     if (options.baseRoutes) {
       this.baseRoutes = options.baseRoutes;
     } else {
       this.baseRoutes = [];
     }
-    // setup msg function
-    if (options.msg && typeof options.msg === 'function') {
-      this.$msg = options.msg;
-    } else {
-      // load a message provider
-      this.$msg = require('vue-m-message');
-    }
-
-    /** resource request control */
-    this.initRoutePermissions();
-
-    // make axios to fail unpermitted resource requests
-    this.requestInterceptor = null;
-    /** path->Set(allowed actions) */
-    this.actionPermissions = new Map();
-
+    // route access control
+    this.resetRoutePermissions();
     this.removeBeforeEachHandle = this.router.beforeEach((to, from, next) => {
       console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
+      //debugger;
+      //TODO handle reload by sessionStorage data
       if (to.meta && to.meta.isControlled) {
         // permission needed
-        if (!this.loggedIn) {
+        if (!this.hasLoginToken) {
           next({ name: 'Login', query: { from: to.path } });
         } else {
           if (this.routePermissions.has(to.path)) {
@@ -117,6 +115,18 @@ class AccessControl {
         }
       }
     });
+
+    // fill in route details, then add this.baseRoutes to router
+    for (let routeNode of this.baseRoutes) {
+      this.fillRouteDetails(routeNode);
+    }
+    this.router.addRoutes(this.baseRoutes);
+
+    // make axios to fail unpermitted resource requests
+    this.requestInterceptor = null;
+
+    /** path->Set(of allowed actions on this route) */
+    this.actionPermissions = new Map();
   }
 
   //NOTE not used on any occasion, might be removed
@@ -126,8 +136,12 @@ class AccessControl {
     }
   }
 
-  // public interface begin
-  get loggedIn() {
+  //#region public interface
+
+  /**
+   * Check if login token exists in sessionStorage
+   */
+  get hasLoginToken() {
     return typeof this.sessionGet(AccessControl.STORAGE_KEY_TOKEN) === 'string';
   }
 
@@ -170,7 +184,7 @@ class AccessControl {
       axios.interceptors.request.reject(this.requestInterceptor);
       this.requestInterceptor = null;
     }
-    this.initRoutePermissions();
+    this.resetRoutePermissions();
     this.menus = [];
 
     // clean up things from login phase
@@ -234,9 +248,9 @@ class AccessControl {
     }
   }
 
-  // end public interface
+  //#endregion public interface
 
-  // procedures begin
+  //#region procedures
 
   /**
    * Handle server response error info from interceptor
@@ -252,14 +266,14 @@ class AccessControl {
       // default procedure
       switch (error.response.status) {
         case 400:
-          this.$msg({
+          this.msg({
             message: error.response.data.message || 'Request invalid.',
             type: 'error',
           });
           break;
         case 401:
           sessionStorage.removeItem('user');
-          this.$msg({
+          this.msg({
             message: error.response.data.message || 'Authentication failed.',
             type: 'warning',
             onClose: function() {
@@ -268,13 +282,13 @@ class AccessControl {
           });
           break;
         case 403:
-          this.$msg({
+          this.msg({
             message: error.response.data.message || 'Access denied.',
             type: 'warning',
           });
           break;
         default:
-          this.$msg({
+          this.msg({
             message:
               error.response.data.message ||
               'Server returned ' + error.response.status + ' ' + error.response.statusText,
@@ -309,9 +323,18 @@ class AccessControl {
    */
   onSigninSuccess(signinResult) {
     // setup permitted routes
-    let [dynamicRoutes, menus] = this.buildRoutesAndMenus(signinResult.modules);
+    let [dynamicRoutes, menus] = this.buildDynamicRoutesAndMenus(signinResult.modules);
+
+    // fill route detail according to full routes map
+    for (let routeNode of dynamicRoutes) {
+      this.fillRouteDetails(routeNode);
+    }
+    for (let menuNode of menus) {
+      this.fillMenuDetails(menuNode);
+    }
     console.debug('routes:', dynamicRoutes);
     console.debug('menus:', menus);
+
     if (!this._routesAdded) {
       // TODO could router be reset on logout?
       this.router.addRoutes(dynamicRoutes);
@@ -329,9 +352,17 @@ class AccessControl {
     return Promise.resolve(signinResult);
   }
 
-  // end procedures
+  //#endregion procedures
 
-  // private utils begin
+  //#region private utils
+
+  /**
+   * Reset route permissions to allow only base routes
+   */
+  resetRoutePermissions() {
+    this.routePermissions = new Set();
+    this.buildRoutePermissions(this.baseRoutes);
+  }
 
   /**
    * Setup axios interceptor:
@@ -358,14 +389,14 @@ class AccessControl {
     }]
     @returns {Array} [routes, menus]
    */
-  buildRoutesAndMenus(modules, parentField) {
+  buildDynamicRoutesAndMenus(modules, parentField) {
     // result
-    const routesTree = [];
+    const dynamicRoutes = [];
     const menusTree = [];
     // short circuit empty input
     if (!Array.isArray(modules)) {
       return {
-        routes: routesTree,
+        routes: dynamicRoutes,
         menus: menusTree,
       };
     }
@@ -411,7 +442,7 @@ class AccessControl {
         if (!rn.path.startsWith('/')) {
           rn.path = '/' + rn.path;
         }
-        routesTree.push(rn);
+        dynamicRoutes.push(rn);
         // create top-level menu nodes
         if (m1.isMenu || m1.isMenuGroup) {
           let mn = menuNodes.get(m1.id);
@@ -465,21 +496,7 @@ class AccessControl {
       }
     } while (visitedIndices.size < modules.length && visitedIndices.size > visitedCount);
 
-    // fill route detail according to full routes map
-    const routePathDefMap = this.buildRoutePathDefMap(this.allRouteDefs);
-
-    for (let routeNode of routesTree) {
-      this.fillRouteDetails(routeNode, routePathDefMap);
-    }
-    for (let menuNode of menusTree) {
-      this.fillMenuDetails(menuNode, routePathDefMap);
-    }
-    return [routesTree, menusTree];
-  }
-
-  initRoutePermissions() {
-    this.routePermissions = new Set();
-    this.buildRoutePermissions(this.baseRoutes);
+    return [dynamicRoutes, menusTree];
   }
 
   /**
@@ -501,8 +518,9 @@ class AccessControl {
   }
 
   /**
-   * Get string or object from storage
-   * @param string key
+   * Get string or object from sessionStorage
+   * @param {string} key
+   * @returns {string} value
    */
   sessionGet(key) {
     var lsVal = sessionStorage.getItem(key);
@@ -514,7 +532,7 @@ class AccessControl {
   }
 
   /**
-   * Save string or object to storage
+   * Save string or object to sessionStorage
    * @param {*} key
    * @param {*} value
    */
@@ -541,16 +559,18 @@ class AccessControl {
   }
 
   /**
-   * Build one Map entry for each routeDef (path->routeDef), then traverse its children too.
-   * @param {Map} routePathDefMap - the Map to be filled
-   * @param {object} routeDef - route definition object
+   * Initialize this.routePathDefMap by building one Map entry for a routeDef
+   *  (path -> routeDef), then traverse its children.
+   *
+   * **NOTE** this.routePathDefMap should be empty before calling this.
+   * @param {object} routeDef - route definition object, must have path property
    * @param {string} basePath - parent path of routeDef
    */
-  parseRouteDef(routePathDefMap, routeDef, basePath) {
-    if (!routeDef) {
-      return;
+  parseRouteDef(routeDef, basePath) {
+    if (this.routePathDefMap.constructor !== Map) {
+      throw new Error('this.routePathDefMap must have been created');
     }
-    if (typeof routeDef.path !== 'string') {
+    if (!routeDef || typeof routeDef.path !== 'string') {
       return;
     }
     basePath = basePath || '/';
@@ -562,38 +582,29 @@ class AccessControl {
       component: routeDef.component,
       meta: routeDef.meta,
     };
-    routePathDefMap.set(fullPath, routeItem);
+    this.routePathDefMap.set(fullPath, routeItem);
 
     if (Array.isArray(routeDef.children)) {
       for (let rdChild of routeDef.children) {
-        this.parseRouteDef(routePathDefMap, rdChild, fullPath);
+        this.parseRouteDef(rdChild, fullPath);
       }
     }
   }
 
   /**
-   * Build a Map of path->routeDef, according to allRouteDefs (passed in as this.routeDefs)
-   * @param {Array} allRouteDefs - Array of route details object
-   */
-  buildRoutePathDefMap(allRouteDefs) {
-    const routePathDefMap = new Map();
-    for (let routeDef of allRouteDefs) {
-      this.parseRouteDef(routePathDefMap, routeDef);
-    }
-    return routePathDefMap;
-  }
-
-  /**
-   * Fill details to routesTree nodes according to routesPathMap
+   * Fill details to routesTree nodes according to `this.routesPathMap`
    * @param {*} routeNode - a node from routesTree, to be filled with details
-   * @param {*} routePathDefMap - path -> route definition detail item
    */
-  fillRouteDetails(routeNode, routePathDefMap) {
-    if (!routeNode.path || !routePathDefMap.has(routeNode.path)) {
+  fillRouteDetails(routeNode, basePath) {
+    let fullPath = routeNode.path;
+    if (basePath) {
+      fullPath = this.joinPath(basePath, routeNode.path === '' ? '#' : routeNode.path);
+    }
+    if (!fullPath || !this.routePathDefMap.has(fullPath)) {
       return;
     }
     // #default_child_route: restore path defined in allRouteDefs
-    let matchingDef = routePathDefMap.get(routeNode.path);
+    let matchingDef = this.routePathDefMap.get(fullPath);
     routeNode.path = matchingDef.path;
     if (matchingDef.name) routeNode.name = matchingDef.name;
     if (matchingDef.component) routeNode.component = matchingDef.component;
@@ -605,7 +616,7 @@ class AccessControl {
     }
     if (routeNode.children) {
       for (let childNode of routeNode.children) {
-        this.fillRouteDetails(childNode, routePathDefMap);
+        this.fillRouteDetails(childNode, fullPath);
       }
     }
   }
@@ -613,11 +624,11 @@ class AccessControl {
   /**
    * Fill details to menusTree nodes according to routesPathMap
    */
-  fillMenuDetails(menuNode, routePathDefMap) {
-    if (!menuNode.path || !routePathDefMap.has(menuNode.path)) {
+  fillMenuDetails(menuNode) {
+    if (!menuNode.path || !this.routePathDefMap.has(menuNode.path)) {
       return;
     }
-    let matchingDef = routePathDefMap.get(menuNode.path);
+    let matchingDef = this.routePathDefMap.get(menuNode.path);
     if (matchingDef.name) menuNode.name = matchingDef.name;
     if (matchingDef.meta) {
       if (!menuNode.meta) {
@@ -627,11 +638,11 @@ class AccessControl {
     }
     if (menuNode.children) {
       for (let childNode of menuNode.children) {
-        this.fillMenuDetails(childNode, routePathDefMap);
+        this.fillMenuDetails(childNode);
       }
     }
   }
-  // end private utils
+  //#endregion private utils
 }
 
 export default AccessControl;

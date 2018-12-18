@@ -1,7 +1,7 @@
 /*
  * Project specific login form
  *
- * #acfx interface: $root.$emit('login', path) on login success
+ * #acfx interface: vm.$root.$emit('login', path) on login success
  */
 
 <style lang="scss">
@@ -73,7 +73,7 @@ export default {
           vm.$root.$emit('login', vm.$router.currentRoute.query.from);
         })
         .catch((error) => {
-          vm.$ac.$msg.warning('Login failed. (' + error + ')');
+          vm.$ac.msg.warning('Login failed. (' + error + ')');
         });
     },
   },

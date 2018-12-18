@@ -44,9 +44,7 @@ export const baseRoutes = [
 import store from '../store';
 import { CURRENT_VIEW_TITLE } from '../store/mutationTypes';
 
-const router = new Router({
-  routes: baseRoutes,
-});
+const router = new Router();
 
 router.afterEach((to, from) => {
   console.debug('router.afterEach: from ' + from.path + ' to ' + to.path);

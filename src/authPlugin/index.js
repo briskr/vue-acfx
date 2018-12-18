@@ -10,7 +10,7 @@ const plugin = {
   name: string = 'ac',      // this plugin extends vue instance at 'vm.$name'
   impl: object = dummyImpl, // strategy instance, actual API implementation, see dummyImpl.js
   router: object,           // pass in router instance to be extended
-  msg: function|string,     // a message display function, will be available at vm.$ac.$msg. Could be:
+  msg: function|string,     // a message display function, will be available at vm.$ac.msg. Could be:
     1) 'noop', to disable message display;
     2) function name, if already installed at vm[msg];
     3) a function reference.
@@ -24,7 +24,7 @@ const plugin = {
       if (options.msg.toLowerCase === 'noop') {
         options.msg = () => {};
       } else {
-        options.msg = Vue[options.msg];
+        options.msg = Vue.prototype[options.msg];
       }
     }
     const acCtrl = new AccessControl(options);
