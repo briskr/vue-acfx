@@ -18,6 +18,7 @@ export default {
       const vm = this;
       this.$ac.signin(() => {
         const path = newPath || '/';
+        // TODO verify currentRoutePath exists , relace with vm.$route?
         if (vm.$router.currentRoutePath != path) {
           vm.$router.replace({ path });
         }

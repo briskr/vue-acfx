@@ -90,12 +90,48 @@ class AccessControl {
     } else {
       this.baseRoutes = [];
     }
-    // route access control
+    // fill in route details, then add this.baseRoutes to router
+    for (let routeNode of this.baseRoutes) {
+      this.fillRouteDetails(routeNode);
+    }
+    this.router.addRoutes(this.baseRoutes);
+    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
+    this.sessionSet('baseRoutes', this.baseRoutes);
+
     this.resetRoutePermissions();
     this.removeBeforeEachHandle = this.router.beforeEach((to, from, next) => {
       console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
       //debugger;
-      //TODO handle reload by sessionStorage data
+      // rebuild buildRoutePermissions
+      if (this.store.state.routes.length === 0) {
+        // vuex store not available on F5 reload, restore from sessionStorage
+        const dynamicRoutes = this.sessionGet('dynamicRoutes');
+        this.appendRoutePermissions(dynamicRoutes);
+      }
+
+      if (!this.hasLoginToken) {
+        // no token yet
+        if (to.meta && to.meta.isControlled) {
+          // login needed to access controlled route
+          next({ name: 'Login', query: { from: to.path } });
+        } else if (this.routePermissions.has(to.path)) {
+          // known and non-controlled route (i.e. inside base routes), continue
+          next();
+        } else {
+          // unknown route
+          next({ name: 'NotFound', props: { path: to.path } });
+        }
+      } else {
+        // has token
+        if (this.routePermissions.has(to.path)) {
+          // known and non-controlled route (i.e. inside base routes), continue
+          next();
+        } else {
+          // unknown route
+          next({ name: 'Unauthorized', props: { path: to.path } });
+        }
+      }
+      /*
       if (to.meta && to.meta.isControlled) {
         // permission needed
         if (!this.hasLoginToken) {
@@ -115,15 +151,8 @@ class AccessControl {
         } else {
           next({ name: 'NotFound' });
         }
-      }
+      } */
     });
-
-    // fill in route details, then add this.baseRoutes to router
-    for (let routeNode of this.baseRoutes) {
-      this.fillRouteDetails(routeNode);
-    }
-    this.router.addRoutes(this.baseRoutes);
-    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
 
     // make axios to fail unpermitted resource requests
     this.requestInterceptor = null;
@@ -323,11 +352,11 @@ class AccessControl {
   }
 
   /**
-   * Receive signin result data
-   * @param SigninResult signonResult
+   * Extract routes and menus data from signin result
+   * @param {SigninResult} signinResult
    */
   onSigninSuccess(signinResult) {
-    // setup permitted routes
+    // REFACTOR: customize translation by project-specific impl
     let [dynamicRoutes, menus] = this.buildDynamicRoutesAndMenus(signinResult.modules);
 
     // fill route detail according to full routes map
@@ -346,7 +375,9 @@ class AccessControl {
       this._routesAdded = true;
     }
     // setup router guards
-    this.buildRoutePermissions(dynamicRoutes);
+    this.appendRoutePermissions(dynamicRoutes);
+    // save to sessionStorage, to be used on reload
+    this.sessionSet('dynamicRoutes', dynamicRoutes);
 
     // setup request control
     //this.setupRequestInterceptor(this.resourcePermissions);
@@ -366,7 +397,7 @@ class AccessControl {
    */
   resetRoutePermissions() {
     this.routePermissions = new Set();
-    this.buildRoutePermissions(this.baseRoutes);
+    this.appendRoutePermissions(this.baseRoutes);
   }
 
   /**
@@ -509,7 +540,10 @@ class AccessControl {
    * @param {Object[]} routes - route to be collected
    * @param {string} [] parentPath
    */
-  buildRoutePermissions(routes, parentPath) {
+  appendRoutePermissions(routes, parentPath) {
+    if (!Array.isArray(routes)) {
+      return;
+    }
     for (let route of routes) {
       let fullPath = route.path;
       if (parentPath) {
@@ -517,7 +551,7 @@ class AccessControl {
       }
       this.routePermissions.add(fullPath);
       if (route.children) {
-        this.buildRoutePermissions(route.children, fullPath);
+        this.appendRoutePermissions(route.children, fullPath);
       }
     }
   }
