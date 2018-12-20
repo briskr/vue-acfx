@@ -1,23 +1,18 @@
 import axios from 'axios';
 import dummyImpl from './dummyImpl';
 
-/*
-interface ApiImpl {
-  login;
-  signin;
-  catchError;
-};
-interface LoginResult {
-  token: string;
-}
- */
-
 /**
  * Access Control plugin
  */
 class AccessControl {
-  static STORAGE_KEY_TOKEN = '_token';
-  static STORAGE_KEY_USER = '_user';
+  /** sessionStorage key: authentication token */
+  static SK_TOKEN = 'token';
+  /** sessionStorage key: authenticated user info */
+  static SK_USER = 'user';
+  /** sessionStorage key: authorized routes */
+  static SK_DYNAMIC_ROUTES = 'dynamicRoutes';
+  /** sessionStorage key: authorized menus */
+  static SK_MENUS = 'menus';
 
   /**
    * Class of the $ac Vue extension object, holding application-level states
@@ -94,65 +89,11 @@ class AccessControl {
     for (let routeNode of this.baseRoutes) {
       this.fillRouteDetails(routeNode);
     }
+    console.debug('addRoutes(this.baseRoutes)');
     this.router.addRoutes(this.baseRoutes);
-    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
-    this.sessionSet('baseRoutes', this.baseRoutes);
 
     this.resetRoutePermissions();
-    this.removeBeforeEachHandle = this.router.beforeEach((to, from, next) => {
-      console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
-      //debugger;
-      // rebuild buildRoutePermissions
-      if (this.store.state.routes.length === 0) {
-        // vuex store not available on F5 reload, restore from sessionStorage
-        const dynamicRoutes = this.sessionGet('dynamicRoutes');
-        this.appendRoutePermissions(dynamicRoutes);
-      }
-
-      if (!this.hasLoginToken) {
-        // no token yet
-        if (to.meta && to.meta.isControlled) {
-          // login needed to access controlled route
-          next({ name: 'Login', query: { from: to.path } });
-        } else if (this.routePermissions.has(to.path)) {
-          // known and non-controlled route (i.e. inside base routes), continue
-          next();
-        } else {
-          // unknown route
-          next({ name: 'NotFound', props: { path: to.path } });
-        }
-      } else {
-        // has token
-        if (this.routePermissions.has(to.path)) {
-          // known and non-controlled route (i.e. inside base routes), continue
-          next();
-        } else {
-          // unknown route
-          next({ name: 'Unauthorized', props: { path: to.path } });
-        }
-      }
-      /*
-      if (to.meta && to.meta.isControlled) {
-        // permission needed
-        if (!this.hasLoginToken) {
-          next({ name: 'Login', query: { from: to.path } });
-        } else {
-          // if sessionStorage has full routes but routePermissions has only base,
-          // then load full routes from sessionStorage
-          if (this.routePermissions.has(to.path)) {
-            next();
-          } else {
-            next({ name: 'Unauthorized' });
-          }
-        }
-      } else {
-        if (this.routePermissions.has(to.path)) {
-          next();
-        } else {
-          next({ name: 'NotFound' });
-        }
-      } */
-    });
+    this.removeBeforeEachHandle = this.router.beforeEach(this.beforeEachRoute.bind(this));
 
     // make axios to fail unpermitted resource requests
     this.requestInterceptor = null;
@@ -174,14 +115,14 @@ class AccessControl {
    * Check if login token exists in sessionStorage
    */
   get hasLoginToken() {
-    return typeof this.sessionGet(AccessControl.STORAGE_KEY_TOKEN) === 'string';
+    return typeof this.sessionGet(AccessControl.SK_TOKEN) === 'string';
   }
 
   /**
    * Current logged in user info
    */
   get currentUser() {
-    return this.sessionGet(AccessControl.STORAGE_KEY_USER);
+    return this.sessionGet(AccessControl.SK_USER);
   }
 
   /**
@@ -189,7 +130,7 @@ class AccessControl {
    * @param {function} callback - optional, to be called after signin
    */
   signin(callback) {
-    let cachedToken = this.sessionGet(AccessControl.STORAGE_KEY_TOKEN);
+    let cachedToken = this.sessionGet(AccessControl.SK_TOKEN);
     if (!cachedToken) {
       // no token yet, redirect to login page
       return this.router.push({
@@ -222,8 +163,8 @@ class AccessControl {
     this.menus = [];
 
     // clean up things from login phase
-    sessionStorage.removeItem(AccessControl.STORAGE_KEY_TOKEN);
-    sessionStorage.removeItem(AccessControl.STORAGE_KEY_USER);
+    sessionStorage.removeItem(AccessControl.SK_TOKEN);
+    sessionStorage.removeItem(AccessControl.SK_USER);
 
     axios.defaults.headers.common['Authorization'] = undefined;
 
@@ -285,6 +226,81 @@ class AccessControl {
   //#endregion public interface
 
   //#region procedures
+  beforeEachRoute(to, from, next) {
+    console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
+    //debugger;
+    let routeAdded = false;
+    if (this.hasLoginToken && !this.store.state.session.user) {
+      console.debug('beforeEachRoute - restore from storage');
+      // page reloaded, restore from sessionStorage
+      // rebuild routePermissions
+      const dynamicRoutes = this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES);
+      // restore component info, lost during s11n
+      for (let routeNode of dynamicRoutes) {
+        this.fillRouteDetails(routeNode);
+      }
+      console.debug('addRoutes(dynamicRoutes)', dynamicRoutes);
+      this.router.addRoutes(dynamicRoutes);
+      this.appendRoutePermissions(dynamicRoutes);
+      routeAdded = true;
+
+      const menus = this.sessionGet(AccessControl.SK_MENUS);
+      console.debug('restored menu from storage:', menus);
+      this.menus = menus;
+
+      const user = this.sessionGet(AccessControl.SK_USER);
+      this.store.dispatch('setUser', { user: user });
+    }
+
+    if (!this.hasLoginToken) {
+      // no token yet
+      if (to.meta && to.meta.isControlled) {
+        // login needed to access controlled route
+        next({ name: 'Login', query: { from: to.path } });
+      } else if (this.routePermissions.has(to.path)) {
+        // known and non-controlled route (i.e. inside base routes), continue
+        next();
+      } else {
+        // unknown route
+        next({ name: 'NotFound', props: { path: to.path } });
+      }
+    } else {
+      // has token
+      if (this.routePermissions.has(to.path)) {
+        // known and non-controlled route (i.e. inside base routes), continue
+        if (routeAdded) {
+          // router rules changed, go to new route object
+          next({ ...to });
+        } else {
+          next();
+        }
+      } else {
+        // unknown route
+        next({ name: 'Unauthorized', props: { path: to.path } });
+      }
+    }
+    /*
+    if (to.meta && to.meta.isControlled) {
+      // permission needed
+      if (!this.hasLoginToken) {
+        next({ name: 'Login', query: { from: to.path } });
+      } else {
+        // if sessionStorage has full routes but routePermissions has only base,
+        // then load full routes from sessionStorage
+        if (this.routePermissions.has(to.path)) {
+          next();
+        } else {
+          next({ name: 'Unauthorized' });
+        }
+      }
+    } else {
+      if (this.routePermissions.has(to.path)) {
+        next();
+      } else {
+        next({ name: 'NotFound' });
+      }
+    } */
+  }
 
   /**
    * Handle server response error info from interceptor
@@ -339,13 +355,13 @@ class AccessControl {
    */
   onLoginSuccess(loginResult) {
     if (loginResult.token) {
-      this.sessionSet(AccessControl.STORAGE_KEY_TOKEN, loginResult.token);
+      this.sessionSet(AccessControl.SK_TOKEN, loginResult.token);
       // TODO allow impl to override token usage
       // set up token header for subsequent requests
       axios.defaults.headers.common['Authorization'] = 'Bearer ' + loginResult.token;
     }
     if (loginResult.user) {
-      this.sessionSet(AccessControl.STORAGE_KEY_USER, loginResult.user);
+      this.sessionSet(AccessControl.SK_USER, loginResult.user);
       this.store.dispatch('setUser', { user: loginResult.user });
     }
     return Promise.resolve(loginResult);
@@ -370,20 +386,23 @@ class AccessControl {
     console.debug('menus:', menus);
 
     if (!this._routesAdded) {
+      console.debug('addRoutes(dynamicRoutes)');
       this.router.addRoutes(dynamicRoutes);
       this.store.dispatch('addRoutes', { routes: dynamicRoutes });
       this._routesAdded = true;
     }
     // setup router guards
     this.appendRoutePermissions(dynamicRoutes);
-    // save to sessionStorage, to be used on reload
-    this.sessionSet('dynamicRoutes', dynamicRoutes);
 
     // setup request control
     //this.setupRequestInterceptor(this.resourcePermissions);
 
     // setup menus
     this.menus = menus;
+
+    // save to sessionStorage, to be used on reload
+    this.sessionSet(AccessControl.SK_DYNAMIC_ROUTES, dynamicRoutes);
+    this.sessionSet(AccessControl.SK_MENUS, menus);
 
     return Promise.resolve(signinResult);
   }

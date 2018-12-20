@@ -4,7 +4,8 @@ const FrontPageView = (resolve) => require(['@/views/dashboard/FrontPage'], reso
 const AboutView = (resolve) => require(['@/views/about/About'], resolve);
 
 // Admin Views
-import AdminHome from '@/views/admin/Home';
+//import AdminHome from '@/views/admin/Home';
+const AdminHome = (resolve) => require(['@/views/admin/Home'], resolve);
 const UsersView = (resolve) => require(['@/views/admin/Users'], resolve);
 const RolesView = (resolve) => require(['@/views/admin/Roles'], resolve);
 
