@@ -55,7 +55,6 @@ const demoImpl = {
         },
         {
           id: 'gid_admin',
-          name: 'Security',
           path: '/admin/',
           isMenu: true,
           isControlled: true,
@@ -89,11 +88,12 @@ const demoImpl = {
           path: 'categories',
           isMenu: true,
         },
-        {
+        /* {
           id: 'gid_debug',
           name: 'Debug',
           path: '/debug',
-        },
+          isControlled: true
+        }, */
       ],
     };
     return new Promise((resolve) => {

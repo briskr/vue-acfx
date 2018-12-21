@@ -226,14 +226,19 @@ class AccessControl {
   //#endregion public interface
 
   //#region procedures
+
+  /**
+   * Handle route navigation
+   * @param {Route} to - target route of navigation
+   * @param {Route} from - previous route
+   * @param {*} next - action callback
+   */
   beforeEachRoute(to, from, next) {
     console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
-    //debugger;
-    let routeAdded = false;
     if (this.hasLoginToken && !this.store.state.session.user) {
-      console.debug('beforeEachRoute - restore from storage');
       // page reloaded, restore from sessionStorage
-      // rebuild routePermissions
+      console.debug('beforeEachRoute - restore from storage');
+      // routes
       const dynamicRoutes = this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES);
       // restore component info, lost during s11n
       for (let routeNode of dynamicRoutes) {
@@ -242,14 +247,16 @@ class AccessControl {
       console.debug('addRoutes(dynamicRoutes)', dynamicRoutes);
       this.router.addRoutes(dynamicRoutes);
       this.appendRoutePermissions(dynamicRoutes);
-      routeAdded = true;
-
+      // menus
       const menus = this.sessionGet(AccessControl.SK_MENUS);
       console.debug('restored menu from storage:', menus);
       this.menus = menus;
-
+      // user
       const user = this.sessionGet(AccessControl.SK_USER);
       this.store.dispatch('setUser', { user: user });
+      // router has been changed, retry with new route object
+      next({ ...to });
+      return;
     }
 
     if (!this.hasLoginToken) {
@@ -258,7 +265,7 @@ class AccessControl {
         // login needed to access controlled route
         next({ name: 'Login', query: { from: to.path } });
       } else if (this.routePermissions.has(to.path)) {
-        // known and non-controlled route (i.e. inside base routes), continue
+        // non-controlled, permmited route (i.e. inside base routes), continue
         next();
       } else {
         // unknown route
@@ -267,39 +274,15 @@ class AccessControl {
     } else {
       // has token
       if (this.routePermissions.has(to.path)) {
-        // known and non-controlled route (i.e. inside base routes), continue
-        if (routeAdded) {
-          // router rules changed, go to new route object
-          next({ ...to });
-        } else {
-          next();
-        }
-      } else {
-        // unknown route
+        // permmited route, continue
+        next();
+      } else if (this.routePathDefMap.has(to.path)) {
+        // path defined but not authorized to current user
         next({ name: 'Unauthorized', props: { path: to.path } });
+      } else {
+        next({ name: 'NotFound', props: { path: to.path } });
       }
     }
-    /*
-    if (to.meta && to.meta.isControlled) {
-      // permission needed
-      if (!this.hasLoginToken) {
-        next({ name: 'Login', query: { from: to.path } });
-      } else {
-        // if sessionStorage has full routes but routePermissions has only base,
-        // then load full routes from sessionStorage
-        if (this.routePermissions.has(to.path)) {
-          next();
-        } else {
-          next({ name: 'Unauthorized' });
-        }
-      }
-    } else {
-      if (this.routePermissions.has(to.path)) {
-        next();
-      } else {
-        next({ name: 'NotFound' });
-      }
-    } */
   }
 
   /**
