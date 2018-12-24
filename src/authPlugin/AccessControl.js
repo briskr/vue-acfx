@@ -259,6 +259,7 @@ class AccessControl {
    */
   beforeEachRoute(to, from, next) {
     console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
+    debugger;
     if (this.hasLoginData && !this.store.state.session.user) {
       // page reloaded, restore from sessionStorage
       console.debug('beforeEachRoute - restore from storage');
@@ -293,7 +294,7 @@ class AccessControl {
         next();
       } else {
         // unknown route
-        next({ name: 'NotFound', props: { path: to.path } });
+        next({ name: 'NotFound', params: { path: to.path } });
       }
     } else {
       // has token
@@ -302,9 +303,9 @@ class AccessControl {
         next();
       } else if (this.routePathDefMap.has(to.path)) {
         // path defined but not authorized to current user
-        next({ name: 'Unauthorized', props: { path: to.path } });
+        next({ name: 'Unauthorized', params: { path: to.path } });
       } else {
-        next({ name: 'NotFound', props: { path: to.path } });
+        next({ name: 'NotFound', params: { path: to.path } });
       }
     }
   }

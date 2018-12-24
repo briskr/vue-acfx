@@ -21,17 +21,19 @@ export const baseRoutes = [
         name: 'FrontPage',
         component: FrontPageView,
       },
+      {
+        path: '/401',
+        name: 'Unauthorized',
+        component: Common401View,
+        props: true,
+      },
+      {
+        path: '/404',
+        name: 'NotFound',
+        component: Common404View,
+        props: true,
+      },
     ],
-  },
-  {
-    path: '/401',
-    name: 'Unauthorized',
-    component: Common401View,
-  },
-  {
-    path: '/404',
-    name: 'NotFound',
-    component: Common404View,
   },
   {
     path: '/login',
