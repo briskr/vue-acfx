@@ -6,7 +6,7 @@
     <logo class="l-adm__logo" />
     <div class="o-menu o-menu--v o-menu--light">
       <sub-menu
-        v-for="menu in $ac.menus"
+        v-for="menu in $ac.menus.admin.children"
         :data="menu"
         :key="menu.id"
       ></sub-menu>
@@ -27,18 +27,17 @@ function renderItem(h, item) {
   }
   if (Array.isArray(item.children)) {
     // render sub-menu title and child items
-    const headerContent =
-      item.path && item.meta && !item.meta.noLink ? (
-        <router-link to={item.path} tag="li" class="l-adm__sub-header">
-          <i class={['menu-item__icon', item.icon]} />
-          <a class="menu-item__text">{textOf(item)}</a>
-        </router-link>
-      ) : (
-        <li class="l-adm__sub-header">
-          <i class={['menu-item__icon', item.icon]} />
-          <span class="menu-item__text">{textOf(item)}</span>
-        </li>
-      );
+    const headerContent = item.path ? (
+      <router-link to={item.path} tag="li" class="l-adm__sub-header">
+        <i class={['menu-item__icon', item.icon]} />
+        <a class="menu-item__text">{textOf(item)}</a>
+      </router-link>
+    ) : (
+      <li class="l-adm__sub-header">
+        <i class={['menu-item__icon', item.icon]} />
+        <span class="menu-item__text">{textOf(item)}</span>
+      </li>
+    );
     return h('ul', { class: 'l-adm__sub' }, [
       headerContent,
       ...item.children.map((item) => renderItem(h, item)),

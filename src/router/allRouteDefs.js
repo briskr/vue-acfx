@@ -40,7 +40,7 @@ const allRouteDefs = [
     component: DashboardHome,
     children: [
       {
-        path: 'contact',
+        path: '/contact',
         name: 'AboutContact',
         meta: {
           name: '联系我们',
@@ -48,13 +48,13 @@ const allRouteDefs = [
         component: AboutView,
         children: [
           {
-            path: '3rd',
-            name: 'About3rdLevel-A',
+            path: 'form',
+            name: 'Contact-A-Form',
             component: AboutView,
           },
           {
-            path: '/3rd-b',
-            name: 'About3rdLevel-B',
+            path: 'address',
+            name: 'Contact-B-Address',
             component: AboutView,
           },
         ],

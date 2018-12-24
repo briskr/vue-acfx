@@ -22,6 +22,7 @@ class AccessControl {
    */
   constructor(options) {
     if (!options) throw new Error('options is needed.');
+
     if (!options.router) {
       throw new Error('router is needed in options.');
     }
@@ -79,7 +80,6 @@ class AccessControl {
         this.parseRouteDef(routeDef);
       }
     }
-
     if (options.baseRoutes) {
       this.baseRoutes = options.baseRoutes;
     } else {
@@ -89,8 +89,9 @@ class AccessControl {
     for (let routeNode of this.baseRoutes) {
       this.fillRouteDetails(routeNode);
     }
-    console.debug('addRoutes(this.baseRoutes)');
+    console.debug('addRoutes(this.baseRoutes)', this.baseRoutes);
     this.router.addRoutes(this.baseRoutes);
+    //debugger;
 
     this.resetRoutePermissions();
     this.removeBeforeEachHandle = this.router.beforeEach(this.beforeEachRoute.bind(this));
@@ -112,19 +113,16 @@ class AccessControl {
   //#region public interface
 
   /**
-   * Check if login token exists in sessionStorage
+   * confirmed login, submits signin request
+   * @param {String} newPath - optionally redirect to this path after signing in
    */
-  get hasLoginToken() {
-    return typeof this.sessionGet(AccessControl.SK_TOKEN) === 'string';
+  loginDirect(newPath) {
+    this.signin(() => {
+      const path = newPath || '/';
+      //console.debug('current:' + this.router.currentRoute.path, 'newPath:' + newPath);
+      this.router.replace({ path });
+    });
   }
-
-  /**
-   * Current logged in user info
-   */
-  get currentUser() {
-    return this.sessionGet(AccessControl.SK_USER);
-  }
-
   /**
    * Establish signin state
    * @param {function} callback - optional, to be called after signin
@@ -143,7 +141,19 @@ class AccessControl {
       typeof callback === 'function' && callback();
     });
   }
-
+  /**
+   * confirmed logout, submit logout request and perform local cleanup
+   * @param {String} newPath - optionally redirect to this path
+   */
+  logoutDirect() {
+    this.signout(() => {
+      if (this.routePermissions.has(this.router.currentRoute.path)) {
+        this.router.replace({ path: this.router.currentRoute.path });
+      } else {
+        this.router.push({ path: '/' });
+      }
+    });
+  }
   /**
    * Clean up login user, clean up what signin() have done.
    * @param {function} callback - optional, to be called after signout
@@ -151,8 +161,6 @@ class AccessControl {
   signout(callback) {
     // clean up things from signin phase
     this.store.dispatch('clearSession');
-    // reset baseRoutes in vuex store
-    this.store.dispatch('addRoutes', { routes: this.baseRoutes });
 
     this.actionPermissions.clear();
     if (this.requestInterceptor) {
@@ -162,11 +170,15 @@ class AccessControl {
     this.resetRoutePermissions();
     this.menus = [];
 
-    // clean up things from login phase
+    // clean up things from login / signin
+    sessionStorage.removeItem(AccessControl.SK_MENUS);
+    sessionStorage.removeItem(AccessControl.SK_DYNAMIC_ROUTES);
     sessionStorage.removeItem(AccessControl.SK_TOKEN);
     sessionStorage.removeItem(AccessControl.SK_USER);
 
     axios.defaults.headers.common['Authorization'] = undefined;
+
+    // TODO clean defined routes in router
 
     typeof callback === 'function' && callback();
   }
@@ -228,6 +240,18 @@ class AccessControl {
   //#region procedures
 
   /**
+   * Check if login token exists in sessionStorage
+   */
+  get hasLoginData() {
+    return (
+      this.sessionGet(AccessControl.SK_TOKEN) &&
+      this.sessionGet(AccessControl.SK_USER) &&
+      this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES) &&
+      this.sessionGet(AccessControl.SK_MENUS)
+    );
+  }
+
+  /**
    * Handle route navigation
    * @param {Route} to - target route of navigation
    * @param {Route} from - previous route
@@ -235,7 +259,7 @@ class AccessControl {
    */
   beforeEachRoute(to, from, next) {
     console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
-    if (this.hasLoginToken && !this.store.state.session.user) {
+    if (this.hasLoginData && !this.store.state.session.user) {
       // page reloaded, restore from sessionStorage
       console.debug('beforeEachRoute - restore from storage');
       // routes
@@ -259,7 +283,7 @@ class AccessControl {
       return;
     }
 
-    if (!this.hasLoginToken) {
+    if (!this.hasLoginData) {
       // no token yet
       if (to.meta && to.meta.isControlled) {
         // login needed to access controlled route
@@ -356,36 +380,45 @@ class AccessControl {
    */
   onSigninSuccess(signinResult) {
     // REFACTOR: customize translation by project-specific impl
-    let [dynamicRoutes, menus] = this.buildDynamicRoutesAndMenus(signinResult.modules);
+    // set up dynamic routes
+    if (
+      !this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES) &&
+      Array.isArray(signinResult.modules)
+    ) {
+      const dynamicRoutes = this.buildDynamicRoutes(signinResult.modules);
+      // fill route detail according to full routes map
+      for (let routeNode of dynamicRoutes) {
+        this.fillRouteDetails(routeNode);
+      }
+      console.debug('routes:', dynamicRoutes);
 
-    // fill route detail according to full routes map
-    for (let routeNode of dynamicRoutes) {
-      this.fillRouteDetails(routeNode);
-    }
-    for (let menuNode of menus) {
-      this.fillMenuDetails(menuNode);
-    }
-    console.debug('routes:', dynamicRoutes);
-    console.debug('menus:', menus);
+      if (!this._routesAdded) {
+        console.debug('addRoutes(dynamicRoutes)');
+        this.router.addRoutes(dynamicRoutes);
+        this._routesAdded = true;
+      }
+      // setup router guards
+      this.appendRoutePermissions(dynamicRoutes);
 
-    if (!this._routesAdded) {
-      console.debug('addRoutes(dynamicRoutes)');
-      this.router.addRoutes(dynamicRoutes);
-      this.store.dispatch('addRoutes', { routes: dynamicRoutes });
-      this._routesAdded = true;
+      this.sessionSet(AccessControl.SK_DYNAMIC_ROUTES, dynamicRoutes);
     }
-    // setup router guards
-    this.appendRoutePermissions(dynamicRoutes);
 
     // setup request control
     //this.setupRequestInterceptor(this.resourcePermissions);
 
-    // setup menus
-    this.menus = menus;
+    // set up menus
+    if (!this.sessionGet(AccessControl.SK_MENUS) && Array.isArray(signinResult.menus)) {
+      const menus = this.buildMenus(signinResult.menus);
+      /* debugger;
+       for (let menuNode of menus) {
+        this.fillMenuDetails(menuNode);
+      } */
+      console.debug('menus:', menus);
+      this.menus = menus;
 
-    // save to sessionStorage, to be used on reload
-    this.sessionSet(AccessControl.SK_DYNAMIC_ROUTES, dynamicRoutes);
-    this.sessionSet(AccessControl.SK_MENUS, menus);
+      // save to sessionStorage, to be used on reload
+      this.sessionSet(AccessControl.SK_MENUS, this.menus);
+    }
 
     return Promise.resolve(signinResult);
   }
@@ -413,82 +446,142 @@ class AccessControl {
   }
   */
   /**
-   * Build a multi-root tree-like structure as an array of top nodes.
-   * Each node describes a route element, and could contain children nodes.
-   * @param {Array} modules - flat array of route parts
-   * [{
-      id: string,
-      parentId: string,
-      path: '/absolute/path/' | './relative/to/parent' | 'relative/to/parent/on/ch',
-      name: string,(optional, prefer name from fullMap)
-      isMenuGroup: bool, (no route link generated)
-      isMenu: bool, (generate route link)
-      isPublic: bool, (allow anonymous access)
-    }]
-    @returns {Array} [routes, menus]
+   * Build an object whose properties being named menu groups.
+   * Each group
+   * @param {object[]} menus - flat array of menu entries. e.g.
+```
+[{
+  id: '',
+  group: 'key_of_group', // only in top-level
+  parentId: 'ref_to_id', // not for top-level
+  path: '/full/path',
+  name: 'Display Name',
+}]
+```
+   * @param {object[]} parentFieldName - default: 'parentId'
+   * @returns {object} menu groups as result object properties
    */
-  buildDynamicRoutesAndMenus(modules, parentField) {
-    // result
-    const dynamicRoutes = [];
-    const menusTree = [];
-    // short circuit empty input
-    if (!Array.isArray(modules)) {
-      return {
-        routes: dynamicRoutes,
-        menus: menusTree,
-      };
+  buildMenus(menus, parentFieldName) {
+    const menuGroups = {};
+    if (!Array.isArray(menus)) {
+      return menuGroups;
     }
-    // build route and menu node for each module
-    const routeNodes = new Map();
+    parentFieldName = parentFieldName || 'parentId';
+    // build a node for each menu entry,
+    // then save them to be found by id
     const menuNodes = new Map();
-    for (let m of modules) {
-      let path = m.path;
-
-      // build route node
-      if (m.path.length > 1 && m.path.endsWith('/')) {
-        path = m.path.substring(0, m.path.length - 1);
+    for (let m of menus) {
+      if (typeof m.id !== 'string') continue;
+      if (
+        typeof m.group !== 'string' &&
+        typeof m.path !== 'string' &&
+        typeof m.name !== 'string'
+      )
+        continue;
+      const mn = {};
+      if (m.group) {
+        mn.name = m.group;
+      } else {
+        if (m.path) {
+          mn.path = this.removeTrailingSlash(m.path);
+        }
+        if (m.name) {
+          mn.name = m.name;
+        } else if (m.path) {
+          // just in case
+          mn.name = m.path.split('/').pop();
+        }
       }
-      const rn = { path };
+      menuNodes.set(m.id, mn);
+    }
+    // pick menu group roots
+    const visitedIndices = new Set();
+    for (let i1 = 0; i1 < menus.length; i1++) {
+      let m1 = menus[i1];
+      if (typeof m1.group === 'string') {
+        visitedIndices.add(i1);
+        // create top-level menu node
+        let mn = menuNodes.get(m1.id);
+        // using group name as key
+        menuGroups[m1.group] = mn;
+      }
+    }
+    // insert children nodes to their parents
+    let visitedCount;
+    do {
+      visitedCount = visitedIndices.size;
+      for (let i2 = 0; i2 < menus.length; i2++) {
+        // pick next unvisited
+        if (visitedIndices.has(i2)) continue;
+        let m2 = menus[i2];
+        // find parent menu node, insert current node as is children
+        if (menuNodes.has(m2.id) && menuNodes.has(m2[parentFieldName])) {
+          let mnParent = menuNodes.get(m2[parentFieldName]);
+          if (!mnParent.children) {
+            mnParent.children = [];
+          }
+          let mnChild = menuNodes.get(m2.id);
+          // if child node path doesn't start with '/', full path should be /parent.path/child.path
+          if (mnChild.path && !mnChild.path.startsWith('/')) {
+            let parentPath = mnParent.path || '/';
+            mnChild.path = this.joinPath(parentPath, mnChild.path);
+          }
+          mnParent.children.push(mnChild);
+        }
+
+        visitedIndices.add(i2);
+      }
+    } while (visitedIndices.size < menus.length && visitedIndices.size > visitedCount);
+
+    return menuGroups;
+  }
+  /**
+   * Build a multi-root tree-like structure as an array of top-level route nodes.
+   * Each node describes a route element, and could contain children nodes.
+   * @param {object[]} modules - flat array of route parts
+   * ```
+[{
+  id: string,
+  parentId: string,
+  path: '/absolute/path/' | './relative/to/parent' | 'relative/to/parent/on/ch',
+  name: string, //optional, prefer name from fullMap)
+  isControlled: bool, //deny anonymous access
+}]
+    ```
+    @returns {object[]} dynamic routes
+   */
+  buildDynamicRoutes(modules, parentFieldName) {
+    const dynamicRoutes = [];
+    if (!Array.isArray(modules)) {
+      return dynamicRoutes;
+    }
+    parentFieldName = parentFieldName || 'parentId';
+    // build a route node for each module,
+    // then save them to be found by id
+    const routeNodes = new Map();
+    for (let m of modules) {
+      if (typeof m.id !== 'string') continue;
+      if (typeof m.path !== 'string') continue;
+      const rn = { path: this.removeTrailingSlash(m.path) };
       if (m.name) rn.name = m.name;
       if (m.isControlled) rn.meta = { isControlled: true };
       routeNodes.set(m.id, rn);
-
-      // whether to include this node in menu
-      if (m.isMenu || m.isMenuGroup) {
-        // build menu node
-        let mn = { path };
-        if (m.isMenuGroup) {
-          // have path but don't render link
-          mn.meta = { noLink: true };
-        } else if (m.isMenu) {
-          if (m.meta) mn.meta = {};
-        }
-        if (m.name) mn.name = m.name;
-        if (m.meta) Object.assign(mn.meta, m.meta);
-        menuNodes.set(m.id, mn);
-      }
     }
-    // pick top level modules (no parent, or parent points to self or non-existing)
+    // pick top level modules
     const visitedIndices = new Set();
-    parentField = parentField || 'parentId';
     for (let i1 = 0; i1 < modules.length; i1++) {
       let m1 = modules[i1];
-      if (!m1[parentField] || m1[parentField] === m1.id || !routeNodes.has(m1[parentField])) {
+      // no parent, parent points to self, or to non-existing
+      if (
+        !m1[parentFieldName] ||
+        m1[parentFieldName] === m1.id ||
+        !routeNodes.has(m1[parentFieldName])
+      ) {
         visitedIndices.add(i1);
-        // create top-level route nodes
+        // create top-level route node
         let rn = routeNodes.get(m1.id);
-        if (!rn.path.startsWith('/')) {
-          rn.path = '/' + rn.path;
-        }
+        rn.path = this.insertLeadingSlash(rn.path);
         dynamicRoutes.push(rn);
-        // create top-level menu nodes
-        if (m1.isMenu || m1.isMenuGroup) {
-          let mn = menuNodes.get(m1.id);
-          if (mn.path && !mn.path.startsWith('/')) {
-            mn.path = '/' + mn.path;
-          }
-          menusTree.push(mn);
-        }
       }
     }
     // insert children nodes to their parents
@@ -499,42 +592,30 @@ class AccessControl {
         // pick next unvisited
         if (visitedIndices.has(i2)) continue;
         let m2 = modules[i2];
-        // NOTE: for the procedure below correctly build paths of deep-down nodes,
-        // higher-level nodes should appear before their children
-        // TODO maybe save path parts during parent-matching, unshift parent path into head of array, then build full path at the end.
-
         // find parent route node, insert current node as its children
-        let rnParent = routeNodes.get(m2[parentField]);
-        if (!rnParent.children) {
-          rnParent.children = [];
-        }
-        let rnChild = routeNodes.get(m2.id);
-        // let rnChild.path be full path, to be matched later with allRouteDefs
-        // if child node path doesn't start with '/', full path should be /parent.path/child.path
-        if (!rnChild.path.startsWith('/')) {
-          // #default_child_route: mark default child route by '/parent/#'
-          rnChild.path = this.joinPath(rnParent.path, rnChild.path === '' ? '#' : rnChild.path);
-        }
-        rnParent.children.push(rnChild);
-
-        if (menuNodes.has(m2.id) && menuNodes.has(m2[parentField])) {
-          // find parent menu node, insert current node as is children
-          let mnParent = menuNodes.get(m2[parentField]);
-          if (!mnParent.children) {
-            mnParent.children = [];
+        if (routeNodes.has(m2.id) && routeNodes.has(m2[parentFieldName])) {
+          let rnParent = routeNodes.get(m2[parentFieldName]);
+          if (!rnParent.children) {
+            rnParent.children = [];
           }
-          let mnChild = menuNodes.get(m2.id);
-          if (!mnChild.path.startsWith('/')) {
-            mnChild.path = this.joinPath(mnParent.path, mnChild.path);
+          let rnChild = routeNodes.get(m2.id);
+          // let rnChild.path be full path, to be matched later with allRouteDefs
+          // if child node path doesn't start with '/', full path should be /parent.path/child.path
+          if (!rnChild.path.startsWith('/')) {
+            // #default_child_route: mark default child route by '/parent/#'
+            rnChild.path = this.joinPath(
+              rnParent.path,
+              rnChild.path === '' ? '#' : rnChild.path
+            );
           }
-          mnParent.children.push(mnChild);
+          rnParent.children.push(rnChild);
         }
 
         visitedIndices.add(i2);
       }
     } while (visitedIndices.size < modules.length && visitedIndices.size > visitedCount);
 
-    return [dynamicRoutes, menusTree];
+    return dynamicRoutes;
   }
 
   /**
@@ -582,6 +663,21 @@ class AccessControl {
       value = 'autostringify-' + JSON.stringify(value);
     }
     return sessionStorage.setItem(key, value);
+  }
+
+  /** Remove trailing slash from path */
+  removeTrailingSlash(path) {
+    if (path.length > 1 && path.endsWith('/')) {
+      return path.substring(0, path.length - 1);
+    }
+    return path;
+  }
+  /** Insert slash at the beginning, if not having one */
+  insertLeadingSlash(path) {
+    if (path.length > 0 && !path.startsWith('/')) {
+      return '/' + path;
+    }
+    return path;
   }
 
   /**
@@ -665,7 +761,7 @@ class AccessControl {
   /**
    * Fill details to menusTree nodes according to routesPathMap
    */
-  fillMenuDetails(menuNode) {
+  fillMenuDetails(menuNode, parentPath) {
     if (!menuNode.path || !this.routePathDefMap.has(menuNode.path)) {
       return;
     }
@@ -679,7 +775,7 @@ class AccessControl {
     }
     if (menuNode.children) {
       for (let childNode of menuNode.children) {
-        this.fillMenuDetails(childNode);
+        this.fillMenuDetails(childNode, menuNode.path);
       }
     }
   }

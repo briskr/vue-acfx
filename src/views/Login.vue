@@ -70,7 +70,7 @@ export default {
       this.$ac
         .submitLogin(arg)
         .then(() => {
-          vm.$root.$emit('login', vm.$router.currentRoute.query.from);
+          vm.$ac.loginDirect(vm.$route.query.from);
         })
         .catch((error) => {
           vm.$ac.msg.warning('Login failed. (' + error + ')');

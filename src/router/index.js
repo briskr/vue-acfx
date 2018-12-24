@@ -14,7 +14,6 @@ Vue.use(Router);
 export const baseRoutes = [
   {
     path: '/',
-    name: 'Dashboard',
     component: DashboardHome,
     children: [
       {
@@ -44,7 +43,18 @@ export const baseRoutes = [
 import store from '../store';
 import { CURRENT_VIEW_TITLE } from '../store/mutationTypes';
 
-const router = new Router();
+// add customize params here, to be used as init and reset
+const createRouter = () => new Router();
+
+const router = createRouter();
+
+/**
+ * Clean added routes, start fresh.
+ */
+export function resetRouter() {
+  const newRouter = createRouter();
+  router.matcher = newRouter.matcher;
+}
 
 router.afterEach((to, from) => {
   console.debug('router.afterEach: from ' + from.path + ' to ' + to.path);

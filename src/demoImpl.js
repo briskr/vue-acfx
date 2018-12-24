@@ -56,7 +56,6 @@ const demoImpl = {
         {
           id: 'gid_admin',
           path: '/admin/',
-          isMenu: true,
           isControlled: true,
         },
         {
@@ -64,7 +63,6 @@ const demoImpl = {
           parentId: 'gid_admin',
           name: 'Users',
           path: 'users',
-          isMenu: true,
           isControlled: true,
         },
         {
@@ -72,21 +70,18 @@ const demoImpl = {
           parentId: 'gid_admin',
           name: 'Roles',
           path: 'roles',
-          isMenu: true,
           isControlled: true,
         },
         {
           id: 'gid_base',
           name: 'Base Data',
           path: '/base/',
-          isMenuGroup: true,
         },
         {
           id: 'mid_category',
           parentId: 'gid_base',
           name: 'Categories',
           path: 'categories',
-          isMenu: true,
         },
         /* {
           id: 'gid_debug',
@@ -94,6 +89,80 @@ const demoImpl = {
           path: '/debug',
           isControlled: true
         }, */
+      ],
+      menus: [
+        {
+          id: 'g-dashb',
+          group: 'dashboard',
+        },
+        {
+          id: 'm-demo',
+          name: 'Demo',
+          parentId: 'g-dashb',
+          path: '/',
+        },
+        {
+          id: 'm-about',
+          name: 'About',
+          parentId: 'g-dashb',
+          path: '/about',
+        },
+        {
+          id: 'm-ab-contact',
+          name: 'Contact',
+          parentId: 'm-about',
+          path: '/contact',
+        },
+        {
+          id: 'm-contact-form',
+          name: 'Guestbook',
+          parentId: 'm-about',
+          path: '/contact/form',
+        },
+        {
+          id: 'm-contact-addr',
+          name: 'Address',
+          parentId: 'm-about',
+          path: '/contact/address',
+        },
+        {
+          id: 'g-admin',
+          group: 'admin',
+        },
+        {
+          id: 'm-sec',
+          name: 'Security',
+          parentId: 'g-admin',
+        },
+        {
+          id: 'm-sec-users',
+          name: 'Users',
+          parentId: 'm-sec',
+          path: '/admin/users',
+        },
+        {
+          id: 'm-sec-roles',
+          name: 'Roles',
+          parentId: 'm-sec',
+          path: '/admin/roles',
+        },
+        {
+          id: 'm-base',
+          name: 'Base Data',
+          parentId: 'g-admin',
+        },
+        {
+          id: 'm-base-cat',
+          name: 'Categories',
+          parentId: 'm-base',
+          path: '/base/categories',
+        },
+        {
+          id: 'm-debug',
+          name: '[debug]',
+          parentId: 'g-admin',
+          path: '/debug',
+        },
       ],
     };
     return new Promise((resolve) => {

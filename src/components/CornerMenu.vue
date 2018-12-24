@@ -7,7 +7,7 @@
         </ul> -->
       </div>
       <div class="menu-item">
-        <a role="menuitem" class="menu-item__text" @click="logout">logout</a>
+        <a role="menuitem" class="menu-item__text" @click="$ac.logoutDirect()">logout</a>
       </div>
     </template>
     <router-link v-else tag="div" class="menu-item"
@@ -16,13 +16,3 @@
     </router-link>
   </div>
 </template>
-
-<script>
-export default {
-  methods: {
-    logout() {
-      this.$root.$emit('logout', this.$route.path);
-    },
-  },
-};
-</script>
