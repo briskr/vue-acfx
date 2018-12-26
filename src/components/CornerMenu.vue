@@ -7,7 +7,7 @@
         </ul> -->
       </div>
       <div class="menu-item">
-        <a role="menuitem" class="menu-item__text" @click="$ac.logoutDirect()">logout</a>
+        <a role="menuitem" href="#" class="menu-item__text" @click="$ac.logoutDirect()">logout</a>
       </div>
     </template>
     <router-link v-else tag="div" class="menu-item"

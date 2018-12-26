@@ -7,13 +7,49 @@
  * Normally built with <ul> and <a> tags, apply flexbox to support others.
  */
 .o-menu {
-  list-style: none;
   display: flex;
+  list-style: none;
+
+  & .submenu {
+    list-style: none;
+  }
+
+  & .menu-item {
+    line-height: 1.6em;
+  }
+  // child block - item
+  & .menu-item__icon {
+    font-family: '';
+  }
+  & .menu-item__text {
+    text-decoration: none;
+
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    &[href] {
+      cursor: pointer;
+    }
+  }
+
   /*
    * Vertical menu
    */
   &--v {
     flex-direction: column;
+
+    & > .menu-item {
+      margin: 0 $unit-padding-1;
+    }
+
+    & .submenu {
+      background: $color-dark-2;
+
+      & .menu-item {
+        padding: 0 0 0 $unit-padding-1;
+      }
+    }
   }
   /*
    * Horizontal menu
@@ -22,20 +58,31 @@
     align-items: center;
 
     & .menu-item {
+      transition-duration: 0.5s;
       padding: 0 0 0 $unit-padding-1;
-    }
-    & .menu-item:last-child {
-      padding: 0 $unit-padding-1;
-    }
-  }
+      &:last-child {
+        padding: 0 $unit-padding-1;
+      }
 
-  // child block - item
-  & .menu-item__icon {
-    font-family: '';
-  }
-  & .menu-item__text {
-    text-decoration: none;
-    cursor: pointer;
+      &:hover .submenu {
+        visibility: visible;
+        opacity: 1;
+        //height: auto;
+      }
+    }
+
+    & .submenu {
+      visibility: hidden;
+      opacity: 0;
+      //height: 0;
+      position: absolute;
+      transition: all 0.5s ease;
+      background: $color-dark-2;
+
+      & .menu-item {
+        padding: 0 $unit-padding-1;
+      }
+    }
   }
 
   // color variations

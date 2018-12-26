@@ -38,6 +38,9 @@ const allRouteDefs = [
   {
     path: '/about',
     component: DashboardHome,
+    meta: {
+      name: '关于本站',
+    },
     children: [
       {
         path: '/contact',
@@ -51,11 +54,17 @@ const allRouteDefs = [
             path: 'form',
             name: 'Contact-A-Form',
             component: AboutView,
+            meta: {
+              name: '留言板',
+            },
           },
           {
             path: 'address',
             name: 'Contact-B-Address',
             component: AboutView,
+            meta: {
+              name: '地址',
+            },
           },
         ],
       },

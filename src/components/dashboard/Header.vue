@@ -4,16 +4,7 @@
       <logo/>
     </div>
     <div class="l-toolbar__fill">
-      <ul class="o-menu o-menu--h o-menu--light">
-        <li class="menu-item">
-          <router-link to="/admin/users" class="menu-item__text">Users</router-link>
-          <!-- TODO menu items -->
-        </li>
-        <li class="menu-item">
-          <router-link to="/admin/roles" class="menu-item__text">Roles</router-link>
-          <!-- TODO menu items -->
-        </li>
-      </ul>
+      <ac-menu group="dashboard" class="o-menu--h o-menu--light"/>
     </div>
     <corner-menu class="l-toolbar__right">
     </corner-menu>
@@ -22,11 +13,13 @@
 
 <script>
 import Logo from '../Logo';
+import AcMenu from '../AcMenu';
 import CornerMenu from '../CornerMenu';
 
 export default {
   components: {
     Logo,
+    AcMenu,
     CornerMenu,
   },
 };

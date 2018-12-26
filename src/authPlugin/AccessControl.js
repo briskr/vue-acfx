@@ -259,7 +259,7 @@ class AccessControl {
    */
   beforeEachRoute(to, from, next) {
     console.debug('router.beforeEach: from ' + from.path + ' to ' + to.path);
-    debugger;
+    //debugger;
     if (this.hasLoginData && !this.store.state.session.user) {
       // page reloaded, restore from sessionStorage
       console.debug('beforeEachRoute - restore from storage');
@@ -410,10 +410,9 @@ class AccessControl {
     // set up menus
     if (!this.sessionGet(AccessControl.SK_MENUS) && Array.isArray(signinResult.menus)) {
       const menus = this.buildMenus(signinResult.menus);
-      /* debugger;
-       for (let menuNode of menus) {
+      for (let menuNode of Object.values(menus)) {
         this.fillMenuDetails(menuNode);
-      } */
+      }
       console.debug('menus:', menus);
       this.menus = menus;
 
@@ -491,6 +490,9 @@ class AccessControl {
         } else if (m.path) {
           // just in case
           mn.name = m.path.split('/').pop();
+        }
+        if (m.noLink) {
+          mn.noLink = true;
         }
       }
       menuNodes.set(m.id, mn);
@@ -762,21 +764,23 @@ class AccessControl {
   /**
    * Fill details to menusTree nodes according to routesPathMap
    */
-  fillMenuDetails(menuNode, parentPath) {
-    if (!menuNode.path || !this.routePathDefMap.has(menuNode.path)) {
+  fillMenuDetails(menuNode) {
+    if (menuNode.path && !this.routePathDefMap.has(menuNode.path)) {
       return;
     }
-    let matchingDef = this.routePathDefMap.get(menuNode.path);
-    if (matchingDef.name) menuNode.name = matchingDef.name;
-    if (matchingDef.meta) {
-      if (!menuNode.meta) {
-        menuNode.meta = {};
+    if (menuNode.path) {
+      let matchingDef = this.routePathDefMap.get(menuNode.path);
+      if (matchingDef.name) menuNode.name = matchingDef.name;
+      if (matchingDef.meta) {
+        if (!menuNode.meta) {
+          menuNode.meta = {};
+        }
+        Object.assign(menuNode.meta, matchingDef.meta);
       }
-      Object.assign(menuNode.meta, matchingDef.meta);
     }
     if (menuNode.children) {
       for (let childNode of menuNode.children) {
-        this.fillMenuDetails(childNode, menuNode.path);
+        this.fillMenuDetails(childNode);
       }
     }
   }

@@ -108,6 +108,12 @@ const demoImpl = {
           path: '/about',
         },
         {
+          id: 'm-admin',
+          name: 'Admin',
+          parentId: 'g-dashb',
+          path: '/admin',
+        },
+        {
           id: 'm-ab-contact',
           name: 'Contact',
           parentId: 'm-about',
@@ -133,6 +139,8 @@ const demoImpl = {
           id: 'm-sec',
           name: 'Security',
           parentId: 'g-admin',
+          path: '/admin',
+          noLink: true,
         },
         {
           id: 'm-sec-users',
@@ -150,6 +158,8 @@ const demoImpl = {
           id: 'm-base',
           name: 'Base Data',
           parentId: 'g-admin',
+          path: '/base',
+          noLink: true,
         },
         {
           id: 'm-base-cat',
