@@ -10,12 +10,10 @@
 
 <script>
 import Logo from '../Logo';
-import AcMenu from '../AcMenu';
 
 export default {
   components: {
     Logo,
-    AcMenu,
   },
 };
 </script>

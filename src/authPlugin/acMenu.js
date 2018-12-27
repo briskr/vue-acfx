@@ -1,7 +1,7 @@
 /**
  * Component to render menu according to menu data from $ac
  */
-const menuGroup = {
+const acMenu = {
   functional: true,
   props: {
     group: {
@@ -52,4 +52,4 @@ const menuGroup = {
   },
 };
 
-export default menuGroup;
+export default acMenu;

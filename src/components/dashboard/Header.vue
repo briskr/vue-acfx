@@ -13,13 +13,11 @@
 
 <script>
 import Logo from '../Logo';
-import AcMenu from '../AcMenu';
 import CornerMenu from '../CornerMenu';
 
 export default {
   components: {
     Logo,
-    AcMenu,
     CornerMenu,
   },
 };

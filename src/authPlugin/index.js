@@ -1,4 +1,5 @@
 import AccessControl from './AccessControl';
+import acMenu from './acMenu';
 
 const plugin = {
   /**
@@ -44,6 +45,9 @@ const plugin = {
         }
       },
     });
+
+    // Register ac-menu component
+    Vue.component('ac-menu', acMenu);
   },
 };
 
