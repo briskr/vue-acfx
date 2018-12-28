@@ -2,7 +2,6 @@ import { CURRENT_VIEW_TITLE } from './mutationTypes';
 
 export default {
   state: {
-    title: 'My-App',
     currentViewTitle: '',
   },
   mutations: {

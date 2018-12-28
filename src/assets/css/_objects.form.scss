@@ -1,0 +1,40 @@
+
+.o-form-item {
+  padding: $unit-padding-1 $unit-padding-2;
+  line-height: 36px;
+  width: 100%;
+  display: flex;
+  & label {
+    min-width: 80px;
+  }
+  & input {
+    width: 100%;
+  }
+
+  &--mini {
+    line-height: 28px;
+    font-size: 12px;
+  }
+
+  &.is-required &__label:before {
+    content: '*';
+    color: $color-danger;
+    margin-right: 4px;
+  }
+}
+
+.o-btn {
+  display: table-cell;
+  width: 80px;
+  height: 100%;
+  border: 1px solid;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+
+  &--primary {
+    background: $color-primary;
+    color: $color-white;
+    border-color: $color-primary;
+  }
+}

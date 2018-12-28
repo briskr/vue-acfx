@@ -7,10 +7,30 @@
  * Normally built with <ul> and <a> tags, apply flexbox to support others.
  */
 .o-menu {
-  list-style: none;
   display: flex;
-  & a {
+  list-style: none;
+
+  & .submenu {
+    list-style: none;
+  }
+
+  & .menu-item {
+    line-height: 1.6em;
+  }
+  // child block - item
+  & .menu-item__icon {
+    font-family: '';
+  }
+  & .menu-item__text {
     text-decoration: none;
+
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    &[href] {
+      cursor: pointer;
+    }
   }
 
   /*
@@ -18,20 +38,62 @@
    */
   &--v {
     flex-direction: column;
-  }
 
+    & > .menu-item {
+      margin: 0 $unit-padding-1;
+    }
+
+    & .submenu {
+      background: $color-dark-2;
+
+      & .menu-item {
+        padding: 0 0 0 $unit-padding-1;
+      }
+    }
+  }
   /*
    * Horizontal menu
    */
   &--h {
-   align-items: center;
+    align-items: center;
+
+    & .menu-item {
+      transition-duration: 0.5s;
+      padding: 0 0 0 $unit-padding-1;
+      &:last-child {
+        padding: 0 $unit-padding-1;
+      }
+
+      &:hover .submenu {
+        visibility: visible;
+        opacity: 1;
+        //height: auto;
+      }
+    }
+
+    & .submenu {
+      visibility: hidden;
+      opacity: 0;
+      //height: 0;
+      position: absolute;
+      transition: all 0.5s ease;
+      background: $color-dark-2;
+
+      & .menu-item {
+        padding: 0 $unit-padding-1;
+      }
+    }
   }
 
-  &--light, &--light a {
-    color: $color-dark;
+  // color variations
+  &--dark {
+    & .menu-item__text {
+      color: $color-dark;
+    }
   }
-
-  &--dark, &--dark a {
-    color: $color-light;
+  &--light {
+    & .menu-item__text {
+      color: $color-light;
+    }
   }
 }

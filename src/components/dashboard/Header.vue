@@ -1,15 +1,10 @@
-<!-- -->
-
 <template>
   <div class="l-dsh__header l-toolbar">
     <div class="l-toolbar__left">
       <logo/>
     </div>
     <div class="l-toolbar__fill">
-      <ul class="l-dsh__menu o-menu o-menu--h o-menu--dark">
-        <li><router-link to="/admin/users">Users</router-link></li>
-        <li><router-link to="/admin/roles">Roles</router-link></li>
-      </ul>
+      <ac-menu group="dashboard" class="o-menu--h o-menu--light"/>
     </div>
     <corner-menu class="l-toolbar__right">
     </corner-menu>
