@@ -147,9 +147,7 @@ class AccessControl {
    */
   logoutDirect() {
     this.signout(() => {
-      if (this.routePermissions.has(this.router.currentRoute.path)) {
-        this.router.replace({ path: this.router.currentRoute.path });
-      } else {
+      if (!this.routePermissions.has(this.router.currentRoute.path)) {
         this.router.push({ path: '/' });
       }
     });
@@ -178,7 +176,7 @@ class AccessControl {
 
     axios.defaults.headers.common['Authorization'] = undefined;
 
-    // TODO clean defined routes in router
+    // clean defined routes in router
 
     typeof callback === 'function' && callback();
   }
