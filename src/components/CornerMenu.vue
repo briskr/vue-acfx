@@ -1,8 +1,8 @@
 <template>
   <div role="menubar" class="o-menu o-menu--light o-menu--h">
-    <template v-if="$store.getters.currentUserName">
+    <template v-if="$ac.currentUserName">
       <div role="menu" class="menu-item">
-        <span class="menu-item__text">{{$store.getters.currentUserName}}</span>
+        <span class="menu-item__text">{{$ac.currentUserName}}</span>
         <!-- hover menu <ul>
         </ul> -->
       </div>

@@ -47,7 +47,7 @@ const plugin = {
     });
 
     // Register ac-menu component
-    Vue.component('ac-menu', acMenu);
+    Vue.component(`${acCtrl.name}-menu`, acMenu);
   },
 };
 

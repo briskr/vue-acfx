@@ -8,6 +8,10 @@ const acMenu = {
       type: String,
       required: true,
     },
+    acName: {
+      type: String,
+      required: false,
+    },
   },
   render(h, context) {
     function textOf(item) {
@@ -38,8 +42,14 @@ const acMenu = {
       }
       return h('li', { class: 'menu-item' }, children);
     }
-    if (!context.props.group || !context.parent.$ac.menus[context.props.group]) return;
-    const menuGroup = context.parent.$ac.menus[context.props.group];
+    let acName = context.props.acName;
+    if (!acName) acName = 'ac';
+    if (!context.props.group) return;
+    const menus = context.parent[`$${acName}`].menus;
+    if (!menus || !menus[context.props.group]) return;
+
+    console.debug('acMenu: ', context.props.group);
+    const menuGroup = menus[context.props.group];
     const result = [];
     for (let menu of menuGroup.children) {
       result.push(renderItem(h, menu));

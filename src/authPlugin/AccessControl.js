@@ -5,6 +5,9 @@ import dummyImpl from './dummyImpl';
  * Access Control plugin
  */
 class AccessControl {
+  /** localStorage key: for sharing sessionStorage content with new tab */
+  static LK_SESSION_REQUEST = '_ac_session_req_';
+  static LK_SESSION_RESPONSE = '_ac_session_resp_';
   /** sessionStorage key: authentication token */
   static SK_TOKEN = 'token';
   /** sessionStorage key: authenticated user info */
@@ -34,10 +37,6 @@ class AccessControl {
 
     // login/signin API implementation
     this.apiImpl = dummyImpl;
-
-    /** menu for current user */
-    // TODO multi menu trees?
-    this.menus = [];
 
     /*
     // TODO axios instance for login/sign API call
@@ -101,6 +100,33 @@ class AccessControl {
 
     /** path->Set(of allowed actions on this route) */
     this.actionPermissions = new Map();
+
+    const ac = this;
+    // copy sessionStorage content to new tab on the same page
+    // see https://blog.guya.net/2015/06/12/sharing-sessionstorage-between-tabs-for-secure-multi-tab-authentication/
+    window.addEventListener('storage', function(event) {
+      if (event.key === AccessControl.LK_SESSION_REQUEST && event.newValue) {
+        // some tab has asked for the sessionStorage -> send it through localStorage
+        console.debug('sessionStorage request received, giving help', event.newValue);
+        localStorage.setItem(AccessControl.LK_SESSION_RESPONSE, JSON.stringify(sessionStorage));
+        localStorage.removeItem(AccessControl.LK_SESSION_RESPONSE);
+      } else if (event.key === AccessControl.LK_SESSION_RESPONSE && !sessionStorage.length) {
+        // for the new tab, sessionStorage is empty -> fill it
+        var data = JSON.parse(event.newValue);
+        for (let key in data) {
+          sessionStorage.setItem(key, data[key]);
+        }
+        // acCtrl should be able to update related UI reactively through vuex
+        console.debug('sessionStorage response filled - restore from storage');
+        ac.restoreFromSessionStorage();
+      }
+    });
+    if (!sessionStorage.length) {
+      // Ask other tabs for session storage
+      localStorage.setItem(AccessControl.LK_SESSION_REQUEST, Date.now());
+      console.debug('sessionStorage request sent');
+      localStorage.removeItem(AccessControl.LK_SESSION_REQUEST);
+    }
   }
 
   //NOTE not used on any occasion, might be removed
@@ -111,6 +137,29 @@ class AccessControl {
   }
 
   //#region public interface
+
+  /**
+   * Login id of currently logged in user (reactive)
+   * @returns empty string if not logged in
+   */
+  get currentUserLogin() {
+    if (!this.store) return '';
+    return this.store.getters.currentUserLogin;
+  }
+  /**
+   * Display name of currently logged in user (reactive)
+   */
+  get currentUserName() {
+    if (!this.store) return '';
+    return this.store.getters.currentUserName;
+  }
+  /**
+   * Authenticated menus for currently logged in user (reactive)
+   */
+  get menus() {
+    if (!this.store) return {};
+    return this.store.state.session.menus;
+  }
 
   /**
    * confirmed login, submits signin request
@@ -166,17 +215,13 @@ class AccessControl {
       this.requestInterceptor = null;
     }
     this.resetRoutePermissions();
-    this.menus = [];
 
     // clean up things from login / signin
-    sessionStorage.removeItem(AccessControl.SK_MENUS);
-    sessionStorage.removeItem(AccessControl.SK_DYNAMIC_ROUTES);
-    sessionStorage.removeItem(AccessControl.SK_TOKEN);
-    sessionStorage.removeItem(AccessControl.SK_USER);
+    sessionStorage.clear();
 
     axios.defaults.headers.common['Authorization'] = undefined;
 
-    // clean defined routes in router
+    // TODO clean defined routes in router?
 
     typeof callback === 'function' && callback();
   }
@@ -250,6 +295,31 @@ class AccessControl {
   }
 
   /**
+   * Restore vuex store states according to sessionStorage data.
+   */
+  restoreFromSessionStorage() {
+    // routes
+    const dynamicRoutes = this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES);
+    // restore component info, lost during s11n
+    for (let routeNode of dynamicRoutes) {
+      this.fillRouteDetails(routeNode);
+    }
+    if (!this._routesAdded) {
+      console.debug('addRoutes(dynamicRoutes)', dynamicRoutes);
+      this.router.addRoutes(dynamicRoutes);
+      this._routesAdded = true;
+    }
+    this.appendRoutePermissions(dynamicRoutes);
+    // menus
+    const menus = this.sessionGet(AccessControl.SK_MENUS);
+    console.debug('restored menu from storage:', menus);
+    this.store.dispatch('setMenus', { menus });
+    // user
+    const user = this.sessionGet(AccessControl.SK_USER);
+    this.store.dispatch('setUser', { user });
+  }
+
+  /**
    * Handle route navigation
    * @param {Route} to - target route of navigation
    * @param {Route} from - previous route
@@ -261,22 +331,7 @@ class AccessControl {
     if (this.hasLoginData && !this.store.state.session.user) {
       // page reloaded, restore from sessionStorage
       console.debug('beforeEachRoute - restore from storage');
-      // routes
-      const dynamicRoutes = this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES);
-      // restore component info, lost during s11n
-      for (let routeNode of dynamicRoutes) {
-        this.fillRouteDetails(routeNode);
-      }
-      console.debug('addRoutes(dynamicRoutes)', dynamicRoutes);
-      this.router.addRoutes(dynamicRoutes);
-      this.appendRoutePermissions(dynamicRoutes);
-      // menus
-      const menus = this.sessionGet(AccessControl.SK_MENUS);
-      console.debug('restored menu from storage:', menus);
-      this.menus = menus;
-      // user
-      const user = this.sessionGet(AccessControl.SK_USER);
-      this.store.dispatch('setUser', { user: user });
+      this.restoreFromSessionStorage();
       // router has been changed, retry with new route object
       next({ ...to });
       return;
@@ -379,6 +434,7 @@ class AccessControl {
    */
   onSigninSuccess(signinResult) {
     // REFACTOR: customize translation by project-specific impl
+    console.debug('got sign-in result, extracting routes, menus...')
     // set up dynamic routes
     if (
       !this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES) &&
@@ -412,7 +468,7 @@ class AccessControl {
         this.fillMenuDetails(menuNode);
       }
       console.debug('menus:', menus);
-      this.menus = menus;
+      this.store.dispatch('setMenus', { menus });
 
       // save to sessionStorage, to be used on reload
       this.sessionSet(AccessControl.SK_MENUS, this.menus);
