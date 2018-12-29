@@ -21,36 +21,21 @@ class AccessControl {
    * Class of the $ac Vue extension object, holding application-level states
    * and data related to access control functionalities.
    *
-   * @param {Object} options - used to initialize $ac object
+   * @param {object} options - used to initialize $ac object
    */
   constructor(options) {
-    if (!options) throw new Error('options is needed.');
+    if (!options) throw new Error('options is required.');
 
     if (!options.router) {
-      throw new Error('router is needed in options.');
+      throw new Error('router is required in options.');
     }
     if (!options.store) {
-      throw new Error('vuex store is needed in options.');
+      throw new Error('vuex store is required in options.');
     }
     this.router = options.router;
     this.store = options.store;
 
-    // login/signin API implementation
-    this.apiImpl = dummyImpl;
-
-    /*
-    // TODO axios instance for login/sign API call
-    let authApiBase = process.env.VUE_APP_AUTH_API_BASE;
-    if (!authApiBase) {
-      authApiBase = process.env.VUE_APP_API_BASE;
-    }
-    this.axiosInstance = axios.create({
-      baseURL: authApiBase,
-      timeout: 10000,
-    });
-    */
-
-    // name to extend Vue vm
+    // customize name used to extend Vue vm
     if (options.name) {
       this.name = options.name;
     } else {
@@ -64,7 +49,21 @@ class AccessControl {
       this.msg = require('vue-m-message');
     }
 
-    // pass in actual login/signin API implementation
+    /*
+    // TODO axios instance for login/sign API call
+    let authApiBase = process.env.VUE_APP_AUTH_API_BASE;
+    if (!authApiBase) {
+      authApiBase = process.env.VUE_APP_API_BASE;
+    }
+    this.axiosInstance = axios.create({
+      baseURL: authApiBase,
+      timeout: 10000,
+    });
+    */
+
+    // login/signin API implementation
+    this.apiImpl = dummyImpl;
+    // pass in project-specific implementation
     if (options.impl && typeof options === 'object') {
       // merge with dummy impl
       Object.assign(this.apiImpl, options.impl);
@@ -434,7 +433,7 @@ class AccessControl {
    */
   onSigninSuccess(signinResult) {
     // REFACTOR: customize translation by project-specific impl
-    console.debug('got sign-in result, extracting routes, menus...')
+    console.debug('got sign-in result, extracting routes, menus...');
     // set up dynamic routes
     if (
       !this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES) &&

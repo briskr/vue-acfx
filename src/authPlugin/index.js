@@ -1,21 +1,26 @@
+/** @module vue-acfx */
+
 import AccessControl from './AccessControl';
 import acMenu from './acMenu';
 
 const plugin = {
   /**
-   * Plugin install entrance
+   * Vue plugin install entrance
    * @param {class} Vue - Vue root, to be extended
    * @param {object} options - used to initialize $ac object:
    * ```js
 {
-  name: string = 'ac',      // this plugin extends vue instance at 'vm.$name'
-  impl: object = dummyImpl, // strategy instance, actual API implementation, see dummyImpl.js
-  router: object,           // pass in router instance to be extended
-  msg: function|string,     // a message display function, will be available at vm.$ac.msg. Could be:
+  name: {string} = 'ac',// this plugin installs at 'vm.$ac' by default
+  msg: {string|func},   // a message display function, will be available at vm.$ac.msg. Could be:
     1) 'noop', to disable message display;
-    2) function name, if already installed at vm[msg];
-    3) a function reference.
-  If falsy, will load a vue-m-message instance as default.
+    2) name of a func already installed at Vue.prototype[msg];
+    3) reference of a func;
+    4) falsy: will load a vue-m-message instance as default.
+  impl: {object},       // strategy instance, actual API implementation, see dummyImpl.js
+  router: {object},     // pass in router instance (required)
+  store: {object},      // pass in vuex store instance (required)
+  allRouteDefs:{RouteDef[]},// should provide meta data for all possible routes
+  baseRoutes: {RouteConfig[]},// permitted routes for anonymous users
 }
     ```
    */
