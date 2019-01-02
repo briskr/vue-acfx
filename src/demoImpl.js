@@ -73,7 +73,7 @@ const demoImpl = {
           name: 'Roles',
           path: 'roles',
           isControlled: true,
-          allowedActions: ['create', 'update'],
+          allowedActions: ['new', 'modify'],
         },
         {
           id: 'gid_base',

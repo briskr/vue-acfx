@@ -4,9 +4,9 @@
 <template>
   <main class="o-main-view">
     <ul class="o-menu o-menu--v">
-      <li v-ac="'create'">create</li>
-      <li v-ac="'update'">update</li>
-      <li v-ac="'delete'">delete</li>
+      <li v-ac="$ac.actions.NEW">create</li>
+      <li v-ac="$ac.actions.MOD">update</li>
+      <li v-ac="$ac.actions.DEL">delete</li>
     </ul>
   </main>
 </template>

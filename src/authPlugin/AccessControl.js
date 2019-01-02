@@ -251,6 +251,25 @@ class AccessControl {
   }
 
   /**
+   * Help writing v-ac directive content with constants.
+   * e.g. v-ac="$ac.actions.NEW"
+   */
+  get actions() {
+    return {
+      LIST: 'list',
+      QRY: 'query',
+      NEW: 'new',
+      MOD: 'modify',
+      DEL: 'delete',
+      BATCH_DEL: 'batchDel',
+      BATCH_MOD: 'batchMod',
+      IMP: 'import',
+      EXP: 'export',
+      UPL: 'upload',
+    };
+  }
+
+  /**
    * Check if requried permissions are granted
    * @param entry - required permission entry name for some UI element
    */
