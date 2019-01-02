@@ -31,6 +31,7 @@ const demoImpl = {
 
   signin() {
     const result = {
+      //#region permissions data sample
       modules: [
         {
           id: 'mid_about',
@@ -64,6 +65,7 @@ const demoImpl = {
           name: 'Users',
           path: 'users',
           isControlled: true,
+          allowedActions: ['delete'],
         },
         {
           id: 'mid_roles',
@@ -71,6 +73,7 @@ const demoImpl = {
           name: 'Roles',
           path: 'roles',
           isControlled: true,
+          allowedActions: ['new', 'modify'],
         },
         {
           id: 'gid_base',
@@ -174,6 +177,7 @@ const demoImpl = {
           path: '/debug',
         },
       ],
+      //#endregion
     };
     return new Promise((resolve) => {
       setTimeout(resolve, 100, result);

@@ -1,7 +1,7 @@
 import Vue from 'vue';
+import router from './router';
 import store from './store';
-
-//Vue.config.productionTip = false;
+Vue.config.productionTip = false;
 
 import '@/assets/css/main.scss';
 
@@ -12,9 +12,9 @@ const msgFunc = Vue.prototype['$' + msgFuncName];
 
 import authPlugin from './authPlugin';
 // project specific
-import allRouteDefs from './router/allRouteDefs';
 import demoImpl from './demoImpl';
-import router, { baseRoutes } from './router';
+import allRouteDefs from './router/allRouteDefs';
+import baseRoutes from './router/baseRoutes';
 
 Vue.use(authPlugin, {
   name: 'ac',
