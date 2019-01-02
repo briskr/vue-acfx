@@ -3,9 +3,10 @@
 
 <template>
   <main class="o-main-view">
-    <ul class="o-menu o-menu--h">
-      <li v-ac="'allowed'">item 1</li>
-      <li v-ac="'denied'">item 2</li>
+    <ul class="o-menu o-menu--v">
+      <li v-ac="'create'">create</li>
+      <li v-ac="'update'">update</li>
+      <li v-ac="'delete'">delete</li>
     </ul>
   </main>
 </template>

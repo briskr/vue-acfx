@@ -89,16 +89,12 @@ class AccessControl {
     }
     console.debug('addRoutes(this.baseRoutes)', this.baseRoutes);
     this.router.addRoutes(this.baseRoutes);
-    //debugger;
 
     this.resetRoutePermissions();
     this.removeBeforeEachHandle = this.router.beforeEach(this.beforeEachRoute.bind(this));
 
     // make axios to fail unpermitted resource requests
     this.requestInterceptor = null;
-
-    /** path->Set(of allowed actions on this route) */
-    this.actionPermissions = new Map();
 
     const ac = this;
     // copy sessionStorage content to new tab on the same page
@@ -208,7 +204,6 @@ class AccessControl {
     // clean up things from signin phase
     this.store.dispatch('clearSession');
 
-    this.actionPermissions.clear();
     if (this.requestInterceptor) {
       axios.interceptors.request.reject(this.requestInterceptor);
       this.requestInterceptor = null;
@@ -257,24 +252,14 @@ class AccessControl {
 
   /**
    * Check if requried permissions are granted
-   * @param entry - required permission entr(y|ies) for some UI element
+   * @param entry - required permission entry name for some UI element
    */
   hasPermission(entry) {
-    // call project-specific impl first
-    if (typeof this.apiImpl.hasPermission === 'function') {
-      return this.apiImpl.hasPermission(entry);
-    }
-    // default impl
-    const currentPath = this.router.app && this.router.app.$route.path;
-    if (!currentPath) {
-      // DEBUG could this be hit when router.app not set up?
-      debugger;
-      return true;
-    }
-    if (this.actionPermissions.has(currentPath)) {
-      const actionSet = this.actionPermissions.get(currentPath);
-      return actionSet && actionSet.has(entry);
-    }
+    const currentPath = this.router.currentRoute.path;
+    if (!this.routePermissions.has(currentPath)) return false;
+    const allowedActions = this.routePermissions.get(currentPath);
+    //console.debug('hasPermission?' + entry, currentPath, allowedActions);
+    return allowedActions.has(entry);
   }
 
   //#endregion public interface
@@ -434,7 +419,7 @@ class AccessControl {
   onSigninSuccess(signinResult) {
     // REFACTOR: customize translation by project-specific impl
     console.debug('got sign-in result, extracting routes, menus...');
-    // set up dynamic routes
+    // set up dynamic routes and route permissions
     if (
       !this.sessionGet(AccessControl.SK_DYNAMIC_ROUTES) &&
       Array.isArray(signinResult.modules)
@@ -484,7 +469,7 @@ class AccessControl {
    * Reset route permissions to allow only base routes
    */
   resetRoutePermissions() {
-    this.routePermissions = new Set();
+    this.routePermissions = new Map();
     this.appendRoutePermissions(this.baseRoutes);
   }
 
@@ -620,7 +605,13 @@ class AccessControl {
       if (typeof m.path !== 'string') continue;
       const rn = { path: this.removeTrailingSlash(m.path) };
       if (m.name) rn.name = m.name;
-      if (m.isControlled) rn.meta = { isControlled: true };
+
+      let meta = {};
+      if (m.isControlled) meta.isControlled = true;
+      if (m.allowedActions) meta.allowedActions = m.allowedActions;
+      if (Object.keys(meta)) {
+        rn.meta = meta;
+      }
       routeNodes.set(m.id, rn);
     }
     // pick top level modules
@@ -688,7 +679,13 @@ class AccessControl {
       if (parentPath) {
         fullPath = this.joinPath(parentPath, fullPath);
       }
-      this.routePermissions.add(fullPath);
+      let actionsSet;
+      if (route.meta && route.meta.allowedActions) {
+        actionsSet = new Set(route.meta.allowedActions);
+      } else {
+        actionsSet = new Set();
+      }
+      this.routePermissions.set(fullPath, actionsSet);
       if (route.children) {
         this.appendRoutePermissions(route.children, fullPath);
       }

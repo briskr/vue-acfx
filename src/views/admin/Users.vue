@@ -3,7 +3,11 @@
 
 <template>
   <main class="o-main-view">
-
+    <ul class="o-menu o-menu--v">
+      <li v-ac="'create'">create</li>
+      <li v-ac="'update'">update</li>
+      <li v-ac="'delete'">delete</li>
+    </ul>
   </main>
 </template>
 
@@ -14,12 +18,6 @@ export default {
     return {
       message: 'users list',
     };
-  },
-  created() {
-    //console.debug('created');
-  },
-  mounted() {
-    //console.debug('mounted');
   },
 };
 </script>
