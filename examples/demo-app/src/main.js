@@ -10,7 +10,7 @@ const msgFuncName = 'msg';
 Vue.use(Message, { name: msgFuncName });
 const msgFunc = Vue.prototype['$' + msgFuncName];
 
-import authPlugin from './authPlugin';
+import authPlugin from '../../../src';
 // project specific
 import demoImpl from './demoImpl';
 import allRouteDefs from './router/allRouteDefs';
