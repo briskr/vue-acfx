@@ -10,6 +10,6 @@
 
 <template>
   <router-link to="/" tag="div" class="c-logo-box">
-    <img src="/static/img/logo.png">
+    <img src="/static/img/logo.png" />
   </router-link>
 </template>

@@ -1,13 +1,12 @@
 <template>
   <div class="l-dsh__header l-toolbar">
     <div class="l-toolbar__left">
-      <logo/>
+      <logo />
     </div>
     <div class="l-toolbar__fill">
-      <ac-menu group="dashboard" class="o-menu--h o-menu--light"/>
+      <ac-menu group="dashboard" class="o-menu--h o-menu--light" />
     </div>
-    <corner-menu class="l-toolbar__right">
-    </corner-menu>
+    <corner-menu class="l-toolbar__right"> </corner-menu>
   </div>
 </template>
 

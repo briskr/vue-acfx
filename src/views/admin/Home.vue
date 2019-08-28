@@ -1,8 +1,5 @@
-/*
- * Admin UI layoute page */
- */
-<style lang="scss">
-</style>
+/* * Admin UI layoute page */ */
+<style lang="scss"></style>
 
 <template>
   <div class="l-adm">

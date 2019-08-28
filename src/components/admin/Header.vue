@@ -1,13 +1,11 @@
-<style lang="scss">
-</style>
+<style lang="scss"></style>
 
 <template>
   <header class="l-adm__header l-toolbar">
     <div class="l-toolbar__left">
-      <div class="l-adm__view-title">{{currentViewTitle}}</div>
+      <div class="l-adm__view-title">{{ currentViewTitle }}</div>
     </div>
-    <corner-menu class="l-toolbar__right">
-    </corner-menu>
+    <corner-menu class="l-toolbar__right"> </corner-menu>
   </header>
 </template>
 

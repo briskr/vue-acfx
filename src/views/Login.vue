@@ -1,8 +1,5 @@
-/*
- * Project specific login form
- *
- * #acfx interface: vm.$root.$emit('login', path) on login success
- */
+/* * Project specific login form * * #acfx interface: vm.$root.$emit('login', path) on login
+success */
 
 <style lang="scss">
 @import '@/assets/css/_settings.colors.scss';
@@ -40,7 +37,12 @@
         </div>
         <div class="o-form-item is-required">
           <label class="o-form-item__label" for="input-password">Password</label>
-          <input id="input-password" type="password" autocomplete="current-password" :value="password" />
+          <input
+            id="input-password"
+            type="password"
+            autocomplete="current-password"
+            :value="password"
+          />
         </div>
         <div class="o-form-item">
           <label />
