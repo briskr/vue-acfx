@@ -8,22 +8,23 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "vue": "^2.5.17",
-    "vue-m-message": "^1.0.0",
-    "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "axios": "^0.19.0",
+    "vue": "^2.6.10",
+    "vue-m-message": "~1.1.1",
+    "vue-router": "^3.1.2",
+    "vuex": "^3.1.1"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.0.5",
-    "@vue/cli-plugin-eslint": "^3.0.5",
-    "@vue/cli-service": "^3.0.5",
-    "@vue/eslint-config-prettier": "^3.0.5",
-    "lint-staged": "^7.2.2",
+    "@vue/cli-plugin-babel": "^3.11.0",
+    "@vue/cli-plugin-eslint": "^3.11.0",
+    "@vue/cli-service": "^3.11.0",
+    "@vue/eslint-config-prettier": "^5.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "lint-staged": "^9.2.5",
     "node-sass": "^4.10.0",
     "sass-loader": "^7.1.0",
     "vue-cli-plugin-build-watch": "^1.0.0",
-    "vue-template-compiler": "^2.5.17"
+    "vue-template-compiler": "^2.6.10"
   },
   "prettier": {
     "printWidth": 96,
